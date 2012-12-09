@@ -2040,7 +2040,7 @@ $$._AdtParsers = {"":"LanguageParsers;_commentStart,_commentEnd,_commentLine,_ne
   return $.gt(this.get$whiteSpace(), $.lt(this.get$def().get$many(), $.get$eof()));
 },
  get$def: function() {
-  return $.xor($.add($.add($.add($.add($.index(this.get$reserved(), "adt"), this.get$identifier()), this.angles$1(this.get$identifier().sepBy$1(this.get$comma()))), this.symbol$1("=")), this.get$$constructor().sepBy$1(this.symbol$1("|"))), new $._AdtParsers_def_anon());
+  return $.xor($.add($.add($.add($.add($.index(this.get$reserved(), "adt"), this.get$identifier()), this.angles$1(this.get$identifier().sepBy$1(this.get$comma())).orElse$1([])), this.symbol$1("=")), this.get$$constructor().sepBy$1(this.symbol$1("|"))), new $._AdtParsers_def_anon());
 },
  get$$constructor: function() {
   return $.xor($.add(this.get$identifier(), this.parens$1(this.get$parameter().sepBy$1(this.get$comma()))), new $._AdtParsers_constructor_anon());
@@ -2190,7 +2190,7 @@ $$.Parser = {"":"Object;_run",
   return $.ParserAccumulator2$(this, p);
 },
  operator$or$1: function(p) {
-  return $.Parser$(new $.Parser_operator$or_anon(this, p));
+  return $.Parser$(new $.Parser_operator$or_anon(p, this));
 },
  get$lookAhead: function() {
   return $.Parser$(new $.Parser_lookAhead_anon(this));
@@ -2458,75 +2458,82 @@ $$._Generator = {"":"Object;config,buffer",
   }
 },
  generateSuperClass$1: function(def) {
-  var typeArgs, t1, t2, t3, t4;
-  typeArgs = "<" + $.Strings_join(def.get$variables(), ", ") + ">";
-  t1 = "abstract class " + ($.S(def.get$name()) + ("<" + $.Strings_join(def.get$variables(), ", ") + ">")) + " {" + "\n";
-  t2 = this.buffer;
-  t3 = $.getInterceptor$JSArray(t2);
-  t3.add$1(t2, t1);
+  var t1, typeArgs, t2, t3, t4;
+  t1 = def.get$variables();
+  typeArgs = $.getInterceptor$JSStringJSArray(t1).get$isEmpty(t1) === true ? "" : "<" + $.Strings_join(t1, ", ") + ">";
+  t1 = $.S(def.get$name());
+  t2 = def.get$variables();
+  t2 = "abstract class " + (t1 + ($.getInterceptor$JSStringJSArray(t2).get$isEmpty(t2) === true ? "" : "<" + $.Strings_join(t2, ", ") + ">")) + " {" + "\n";
+  t3 = this.buffer;
+  t4 = $.getInterceptor$JSArray(t3);
+  t4.add$1(t3, t2);
   t1 = this.config;
   if (t1.isGetters === true)
-    for (t4 = def.get$constructors(), t4 = $.getInterceptor$JSArray(t4).iterator$0(t4); t4.get$hasNext() === true;)
-      t3.add$1(t2, "  bool get is" + $.S(t4.next$0().get$name()) + ";" + "\n");
+    for (t2 = def.get$constructors(), t2 = $.getInterceptor$JSArray(t2).iterator$0(t2); t2.get$hasNext() === true;)
+      t4.add$1(t3, "  bool get is" + $.S(t2.next$0().get$name()) + ";" + "\n");
   if (t1.asGetters === true)
     for (t1 = def.get$constructors(), t1 = $.getInterceptor$JSArray(t1).iterator$0(t1); t1.get$hasNext() === true;) {
-      t4 = t1.next$0();
-      t3.add$1(t2, "  " + $.S(t4.get$name()) + typeArgs + " get as" + $.S(t4.get$name()) + ";" + "\n");
+      t2 = t1.next$0();
+      t4.add$1(t3, "  " + $.S(t2.get$name()) + typeArgs + " get as" + $.S(t2.get$name()) + ";" + "\n");
     }
-  t3.add$1(t2, "}\n");
+  t4.add$1(t3, "}\n");
 },
  generateConstructorClass$2: function(def, cons) {
-  var typeArgs, t1, t2, t3, thisArgs, t4, t5, rhs, t6, args;
-  typeArgs = "<" + $.Strings_join(def.get$variables(), ", ") + ">";
-  t1 = "class " + $.S(cons.get$name()) + typeArgs + " extends " + ($.S(def.get$name()) + ("<" + $.Strings_join(def.get$variables(), ", ") + ">")) + " {" + "\n";
-  t2 = this.buffer;
-  t3 = $.getInterceptor$JSArray(t2);
-  t3.add$1(t2, t1);
+  var t1, typeArgs, t2, t3, t4, t5, thisArgs, rhs, t6, args;
+  t1 = def.get$variables();
+  typeArgs = $.getInterceptor$JSStringJSArray(t1).get$isEmpty(t1) === true ? "" : "<" + $.Strings_join(t1, ", ") + ">";
+  t1 = "class " + $.S(cons.get$name()) + typeArgs + " extends ";
+  t2 = $.S(def.get$name());
+  t3 = def.get$variables();
+  t3 = t1 + (t2 + ($.getInterceptor$JSStringJSArray(t3).get$isEmpty(t3) === true ? "" : "<" + $.Strings_join(t3, ", ") + ">")) + " {" + "\n";
+  t4 = this.buffer;
+  t5 = $.getInterceptor$JSArray(t4);
+  t5.add$1(t4, t3);
   for (t1 = cons.get$parameters(), t1 = $.getInterceptor$JSArray(t1).iterator$0(t1); t1.get$hasNext() === true;)
-    t3.add$1(t2, "  " + $.S(t1.next$0()) + ";" + "\n");
+    t5.add$1(t4, "  " + $.S(t1.next$0()) + ";" + "\n");
   t1 = cons.get$parameters();
   thisArgs = $.getInterceptor$JSArray(t1).map$1(t1, new $._Generator_generateConstructorClass_anon());
-  t3.add$1(t2, "  " + $.S(cons.get$name()) + "(" + $.Strings_join(thisArgs, ", ") + ");" + "\n");
+  t5.add$1(t4, "  " + $.S(cons.get$name()) + "(" + $.Strings_join(thisArgs, ", ") + ");" + "\n");
   t1 = this.config;
   if (t1.isGetters === true)
-    for (t4 = def.get$constructors(), t4 = $.getInterceptor$JSArray(t4).iterator$0(t4); t4.get$hasNext() === true;) {
-      t5 = t4.next$0();
-      t3.add$1(t2, "  bool get is" + $.S(t5.get$name()) + " => " + $.S($.eq(t5, cons)) + ";" + "\n");
+    for (t2 = def.get$constructors(), t2 = $.getInterceptor$JSArray(t2).iterator$0(t2); t2.get$hasNext() === true;) {
+      t3 = t2.next$0();
+      t5.add$1(t4, "  bool get is" + $.S(t3.get$name()) + " => " + $.S($.eq(t3, cons)) + ";" + "\n");
     }
   if (t1.asGetters === true)
-    for (t4 = def.get$constructors(), t4 = $.getInterceptor$JSArray(t4).iterator$0(t4); t4.get$hasNext() === true;) {
-      t5 = t4.next$0();
-      rhs = $.eqB(t5, cons) ? "this" : "null";
-      t3.add$1(t2, "  " + $.S(t5.get$name()) + typeArgs + " get as" + $.S(t5.get$name()) + " => " + rhs + ";" + "\n");
+    for (t2 = def.get$constructors(), t2 = $.getInterceptor$JSArray(t2).iterator$0(t2); t2.get$hasNext() === true;) {
+      t3 = t2.next$0();
+      rhs = $.eqB(t3, cons) ? "this" : "null";
+      t5.add$1(t4, "  " + $.S(t3.get$name()) + typeArgs + " get as" + $.S(t3.get$name()) + " => " + rhs + ";" + "\n");
     }
-  t4 = t1.equality === true;
-  if (t4) {
-    t3.add$1(t2, "  bool operator ==(other) {\n");
-    t3.add$1(t2, "    return identical(this, other)\n");
-    t3.add$1(t2, "        || (other is " + $.S(cons.get$name()) + typeArgs);
-    for (t5 = cons.get$parameters(), t5 = $.getInterceptor$JSArray(t5).iterator$0(t5); t5.get$hasNext() === true;) {
-      t6 = t5.next$0();
-      t3.add$1(t2, "\n            && " + $.S(t6.get$name()) + " == other." + $.S(t6.get$name()));
+  t2 = t1.equality === true;
+  if (t2) {
+    t5.add$1(t4, "  bool operator ==(other) {\n");
+    t5.add$1(t4, "    return identical(this, other)\n");
+    t5.add$1(t4, "        || (other is " + $.S(cons.get$name()) + typeArgs);
+    for (t3 = cons.get$parameters(), t3 = $.getInterceptor$JSArray(t3).iterator$0(t3); t3.get$hasNext() === true;) {
+      t6 = t3.next$0();
+      t5.add$1(t4, "\n            && " + $.S(t6.get$name()) + " == other." + $.S(t6.get$name()));
     }
-    t3.add$1(t2, ");\n");
-    t3.add$1(t2, "  }\n");
+    t5.add$1(t4, ");\n");
+    t5.add$1(t4, "  }\n");
   }
-  if (t4) {
-    t3.add$1(t2, "  int get hashCode {\n");
-    t3.add$1(t2, "    int result = 1;\n");
-    for (t4 = cons.get$parameters(), t4 = $.getInterceptor$JSArray(t4).iterator$0(t4); t4.get$hasNext() === true;)
-      t3.add$1(t2, "    result = 31 * result + " + $.S(t4.next$0().get$name()) + ".hashCode;" + "\n");
-    t3.add$1(t2, "    return result;\n");
-    t3.add$1(t2, "  }\n");
+  if (t2) {
+    t5.add$1(t4, "  int get hashCode {\n");
+    t5.add$1(t4, "    int result = 1;\n");
+    for (t2 = cons.get$parameters(), t2 = $.getInterceptor$JSArray(t2).iterator$0(t2); t2.get$hasNext() === true;)
+      t5.add$1(t4, "    result = 31 * result + " + $.S(t2.next$0().get$name()) + ".hashCode;" + "\n");
+    t5.add$1(t4, "    return result;\n");
+    t5.add$1(t4, "  }\n");
   }
   if (t1.toStringMethod === true) {
-    t3.add$1(t2, "  String toString() {\n");
+    t5.add$1(t4, "  String toString() {\n");
     t1 = cons.get$parameters();
     args = $.getInterceptor$JSArray(t1).map$1(t1, new $._Generator_generateConstructorClass_anon0());
-    t3.add$1(t2, "    return '" + $.S(cons.get$name()) + "(" + $.Strings_join(args, ", ") + ")';" + "\n");
-    t3.add$1(t2, "  }\n");
+    t5.add$1(t4, "    return '" + $.S(cons.get$name()) + "(" + $.Strings_join(args, ", ") + ")';" + "\n");
+    t5.add$1(t4, "  }\n");
   }
-  t3.add$1(t2, "}\n");
+  t5.add$1(t4, "}\n");
 }
 };
 
@@ -3285,13 +3292,6 @@ $$.ParserAccumulator5_operator$xor_____anon = {"":"Closure;x4_14,x1_13,x3_12,f_1
 }
 };
 
-$$.Parser_operator$or_anon = {"":"Closure;this_1,p_0",
- call$2: function(s, pos) {
-  var res = this.this_1._run$2(s, pos);
-  return res.get$isSuccess() === true ? res : this.p_0._run$2(s, pos);
-}
-};
-
 $$.string_anon = {"":"Closure;str_0",
  call$2: function(s, pos) {
   var t1, t3, max, match, i, t2, t4;
@@ -3374,6 +3374,13 @@ $$.string_anon = {"":"Closure;str_0",
       else
         return $._failure(s, pos, "expected \"" + $.S(t1) + "\"");
   }
+}
+};
+
+$$.Parser_operator$or_anon = {"":"Closure;p_1,this_0",
+ call$2: function(s, pos) {
+  var res = this.this_0._run$2(s, pos);
+  return res.get$isSuccess() === true ? res : this.p_1._run$2(s, pos);
 }
 };
 
