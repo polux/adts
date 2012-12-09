@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
+for details. All rights reserved. Use of this source code is governed by a
+BSD-style license that can be found in the LICENSE file.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Algebraic Datatype for Dart</title>
+</head>
+<body>
+
+<textarea rows="5" cols="100" bind-value="input"></textarea>
+<div>
+  <label>
+    <input type="checkbox" bind-checked="isGetters" />
+    <code>is</code> Getters
+  </label>
+
+  <label>
+    <input type="checkbox" bind-checked="asGetters" />
+    <code>as</code> Getters
+  </label>
+
+  <label>
+    <input type="checkbox" bind-checked="equality" />
+    <code>==</code> and <code>hashCode</code>
+  </label>
+
+  <label>
+    <input type="checkbox" bind-checked="toStringMethod" />
+    <code>toString</code>
+  </label>
+</div>
+
+<code>
+  <pre>
+{{generated}}
+  </pre>
+</code>
+
+  <script type="application/dart">
+import 'dart:html';
+import 'package:web_ui/web_ui.dart';
+import 'package:adts/adt_parser.dart';
+import 'package:adts/generator.dart';
+
+String input = '''
+adt List<A> = Nil() | Cons(A head, List<A> tail)
+
+adt Map<K, V> = Fork(Map<K, V> left, Map<K,V> right)
+              | Leaf(K key, V value)
+''';
+
+bool isGetters = true;
+bool asGetters = true;
+bool equality = true;
+bool toStringMethod = true;
+
+String get generated {
+  final parseResult = adtParser.run(input);
+  if (parseResult.isSuccess) {
+    final config = new Configuration(
+      isGetters: isGetters,
+      asGetters: asGetters,
+      equality: equality,
+      toStringMethod: toStringMethod
+    );
+    return generate(parseResult.value, config);
+  } else {
+    return "Parse Error: ${parseResult.errorMessage}";
+  }
+}
+
+main() {
+}
+  </script>
+</body>
+</html>
