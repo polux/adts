@@ -2502,7 +2502,7 @@ $$._Generator = {"":"Object;config,buffer",
   t4 = t1.equality === true;
   if (t4) {
     t3.add$1(t2, "  bool operator ==(other) {\n");
-    t3.add$1(t2, "    return same(this, other)\n");
+    t3.add$1(t2, "    return identical(this, other)\n");
     t3.add$1(t2, "        || (other is " + $.S(cons.get$name()) + typeArgs);
     for (t5 = cons.get$parameters(), t5 = $.getInterceptor$JSArray(t5).iterator$0(t5); t5.get$hasNext() === true;) {
       t6 = t5.next$0();
@@ -2513,7 +2513,7 @@ $$._Generator = {"":"Object;config,buffer",
   }
   if (t4) {
     t3.add$1(t2, "  int get hashCode {\n");
-    t3.add$1(t2, "    int result = 1\n");
+    t3.add$1(t2, "    int result = 1;\n");
     for (t4 = cons.get$parameters(), t4 = $.getInterceptor$JSArray(t4).iterator$0(t4); t4.get$hasNext() === true;)
       t3.add$1(t2, "    result = 31 * result + " + $.S(t4.next$0().get$name()) + ".hashCode;" + "\n");
     t3.add$1(t2, "    return result;\n");
