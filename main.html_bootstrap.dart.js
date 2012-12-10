@@ -3054,7 +3054,7 @@ $$._generate_generateConstructorClass = {"":"Closure;write_4,config_3,writeLn_2"
     t4 = t2.next$0();
     t1.call$1("  " + (t3.get$finalFields() === true ? "final " : "") + $.S(t4) + ";");
   }
-  if (t3.get$finalFields() === true)
+  if (t3.get$finalFields() === true && t3.get$equality() === true)
     t1.call$1("  final int hashCode;");
   t2 = t3.get$equality() === true && t3.get$finalFields() === true;
   t4 = cons.get$parameters();
