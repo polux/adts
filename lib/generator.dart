@@ -11,6 +11,7 @@ class Configuration {
   final bool finalFields;
   final bool isGetters;
   final bool asGetters;
+  final bool withMethod;
   final bool equality;
   final bool toStringMethod;
   final bool fromString;
@@ -26,6 +27,7 @@ class Configuration {
     bool finalFields: true,
     bool isGetters: true,
     bool asGetters: true,
+    bool withMethod: true,
     bool equality: true,
     bool toStringMethod: true,
     bool fromString: true,
@@ -39,6 +41,7 @@ class Configuration {
   }) : this.finalFields = finalFields
      , this.isGetters = isGetters
      , this.asGetters = asGetters
+     , this.withMethod = withMethod
      , this.equality = equality
      , this.toStringMethod = toStringMethod
      , this.fromString = fromString
@@ -87,6 +90,9 @@ String _generate(Configuration config, StringBuffer buffer,
 
   void generateConstructorClass(DataTypeDefinition def, Constructor cons) {
     final typeArgs = _typeArgs(def.variables);
+    final typedParams = _commas(
+        cons.parameters.map((p) => '${p.type} ${p.name}'));
+
     writeLn('class ${cons.name}${typeArgs} extends ${_typeRepr(def)} {');
 
     // fields
@@ -100,8 +106,7 @@ String _generate(Configuration config, StringBuffer buffer,
 
     // constructor
     if (config.equality && config.finalFields) {
-      final typedParams = cons.parameters.map((p) => '${p.type} ${p.name}');
-      write('  ${cons.name}(${_commas(typedParams)})');
+      write('  ${cons.name}($typedParams)');
       bool first = true;
       for (final p in cons.parameters) {
         final sep = first ? ':' : ',';
@@ -110,7 +115,8 @@ String _generate(Configuration config, StringBuffer buffer,
       }
       final sep = first ? ' :' : '\n      ,';
       final params = cons.parameters.map((p) => p.name);
-      writeLn('$sep this.hashCode = ${cons.name}._hashCode(${_commas(params)});');
+      writeLn('$sep this.hashCode = '
+              '${cons.name}._hashCode(${_commas(params)});');
     } else {
       final thisParams = cons.parameters.map((p) => 'this.${p.name}');
       writeLn('  ${cons.name}(${_commas(thisParams)});');
@@ -167,6 +173,19 @@ String _generate(Configuration config, StringBuffer buffer,
       final xargs = _typeArgs(def.variables, 'Object');
       writeLn('  Object accept(${def.name}Visitor${xargs} visitor) {');
       writeLn('    return visitor.visit${cons.name}(this);');
+      writeLn('  }');
+    }
+
+    // with method
+    if (config.withMethod && !cons.parameters.isEmpty) {
+      writeLn('  ${cons.name}${typeArgs} with({$typedParams}) {');
+      writeLn('    return new ${cons.name}(');
+      final acc = [];
+      for (final p in cons.parameters) {
+        acc.add('        ?${p.name} ? ${p.name} : this.${p.name}');
+      }
+      write(Strings.join(acc, ',\n'));
+      writeLn(');');
       writeLn('  }');
     }
 

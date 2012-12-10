@@ -30,6 +30,11 @@ BSD-style license that can be found in the LICENSE file.
   </label>
 
   <label>
+    <input type="checkbox" bind-checked="withMethod" />
+    <code>with</code> method
+  </label>
+
+  <label>
     <input type="checkbox" bind-checked="equality" />
     <code>==</code> and <code>hashCode</code>
   </label>
@@ -41,7 +46,7 @@ BSD-style license that can be found in the LICENSE file.
 
   <label>
     <input type="checkbox" bind-checked="visitor" />
-    <code>visitors</code>
+    visitors
   </label>
 </div>
 
@@ -70,6 +75,7 @@ bool asGetters = true;
 bool equality = true;
 bool toStringMethod = true;
 bool visitor = true;
+bool withMethod = true;
 
 String get generated {
   final parseResult = adtParser.run(input);
@@ -78,6 +84,7 @@ String get generated {
       finalFields: finalFields,
       isGetters: isGetters,
       asGetters: asGetters,
+      withMethod: withMethod,
       equality: equality,
       toStringMethod: toStringMethod,
       visitor: visitor
