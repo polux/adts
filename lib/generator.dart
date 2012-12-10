@@ -94,7 +94,7 @@ String _generate(Configuration config, StringBuffer buffer,
       final modifier = config.finalFields ? 'final ' : '';
       writeLn('  $modifier$p;');
     }
-    if (config.finalFields) {
+    if (config.finalFields && config.equality) {
       writeLn('  final int hashCode;');
     }
 
