@@ -235,13 +235,13 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // accept
-    if (config.visitor) {
+    if (config.visitor && !def.constructors.isEmpty) {
       final xargs = _typeArgs(def.variables, 'Object');
       writeLn('  Object accept(${def.name}Visitor${xargs} visitor);');
     }
 
     // match
-    if (config.matchMethod) {
+    if (config.matchMethod && !def.constructors.isEmpty) {
       generateMatchMethodPrefix(def);
       writeLn(';');
     }
@@ -250,6 +250,9 @@ String _generate(Configuration config, StringBuffer buffer,
   }
 
   void generateVisitorClass(DataTypeDefinition def) {
+    if (def.constructors.isEmpty) {
+      return;
+    }
     final fresh = _freshTypeVar('R', def.variables);
     final args = _typeArgs(def.variables);
     final xargs = _typeArgs(def.variables, fresh);
