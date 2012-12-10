@@ -15,13 +15,18 @@ BSD-style license that can be found in the LICENSE file.
 <textarea rows="5" cols="100" bind-value="input"></textarea>
 <div>
   <label>
+    <input type="checkbox" bind-checked="finalFields" />
+    final fields
+  </label>
+
+  <label>
     <input type="checkbox" bind-checked="isGetters" />
-    <code>is</code> Getters
+    <code>is</code> getters
   </label>
 
   <label>
     <input type="checkbox" bind-checked="asGetters" />
-    <code>as</code> Getters
+    <code>as</code> getters
   </label>
 
   <label>
@@ -54,6 +59,7 @@ adt Map<K, V> = Fork(Map<K, V> left, Map<K,V> right)
               | Leaf(K key, V value)
 ''';
 
+bool finalFields = true;
 bool isGetters = true;
 bool asGetters = true;
 bool equality = true;
@@ -63,6 +69,7 @@ String get generated {
   final parseResult = adtParser.run(input);
   if (parseResult.isSuccess) {
     final config = new Configuration(
+      finalFields: finalFields,
       isGetters: isGetters,
       asGetters: asGetters,
       equality: equality,

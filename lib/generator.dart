@@ -8,6 +8,7 @@ library generator;
 import 'package:adts/ast.dart';
 
 class Configuration {
+  final bool finalFields;
   final bool isGetters;
   final bool asGetters;
   final bool equality;
@@ -21,6 +22,7 @@ class Configuration {
   final bool fromJson;
 
   Configuration({
+    bool finalFields: true,
     bool isGetters: true,
     bool asGetters: true,
     bool equality: true,
@@ -32,7 +34,8 @@ class Configuration {
     bool extractor: true,
     bool toJson: true,
     bool fromJson: true
-  }) : this.isGetters = isGetters
+  }) : this.finalFields = finalFields
+     , this.isGetters = isGetters
      , this.asGetters = asGetters
      , this.equality = equality
      , this.toStringMethod = toStringMethod
@@ -57,11 +60,8 @@ String _typeArgs(List args) =>
 String _typeRepr(DataTypeDefinition def) =>
     "${def.name}${_typeArgs(def.variables)}";
 
-class _Generator {
-  final Configuration config;
-  final StringBuffer buffer;
-
-  _Generator(this.config, this.buffer);
+String _generate(Configuration config, StringBuffer buffer,
+                 List<DataTypeDefinition> defs) {
 
   void write(String s) {
     buffer.add(s);
@@ -71,70 +71,45 @@ class _Generator {
     write('$s\n');
   }
 
-  void generate(List<DataTypeDefinition> defs) {
-    for (final def in defs) {
-      generateDefinition(def);
-      writeLn('');
-    }
-  }
-
-  void generateDefinition(DataTypeDefinition def) {
-    generateSuperClass(def);
-    writeLn('');
-    for (final cons in def.constructors) {
-      generateConstructorClass(def, cons);
-      writeLn('');
-    }
-  }
-
-  void generateSuperClass(DataTypeDefinition def) {
-    final typeArgs = _typeArgs(def.variables);
-
-    writeLn('abstract class ${_typeRepr(def)} {');
-
-    // isCons
-    if (config.isGetters) {
-      for (final c in def.constructors) {
-        writeLn('  bool get is${c.name};');
-      }
-    }
-
-    // asCons
-    if (config.asGetters) {
-      for (final c in def.constructors) {
-        writeLn('  ${c.name}${typeArgs} get as${c.name};');
-      }
-    }
-    writeLn('}');
-  }
-
-  void generateConstructorClass(DataTypeDefinition def,
-                                Constructor cons) {
+  void generateConstructorClass(DataTypeDefinition def, Constructor cons) {
     final typeArgs = _typeArgs(def.variables);
     writeLn('class ${cons.name}${typeArgs} extends ${_typeRepr(def)} {');
 
     // fields
     for (final p in cons.parameters) {
-      writeLn('  $p;');
+      final modifier = config.finalFields ? 'final ' : '';
+      writeLn('  $modifier$p;');
+    }
+    if (config.finalFields) {
+      writeLn('  final int hashCode;');
     }
 
     // constructor
-    final List thisArgs = cons.parameters.map((p) => 'this.${p.name}');
-    writeLn('  ${cons.name}(${_commas(thisArgs)});');
+    if (config.equality && config.finalFields) {
+      final typedParams = cons.parameters.map((p) => '${p.type} ${p.name}');
+      write('  ${cons.name}(${_commas(typedParams)})');
+      bool first = true;
+      for (final p in cons.parameters) {
+        final sep = first ? ':' : ',';
+        write('\n      $sep this.${p.name} = ${p.name}');
+        first = false;
+      }
+      final sep = first ? ' :' : '\n      ,';
+      final params = cons.parameters.map((p) => p.name);
+      writeLn('$sep this.hashCode = ${cons.name}._hashCode(${_commas(params)});');
+    } else {
+      final thisParams = cons.parameters.map((p) => 'this.${p.name}');
+      writeLn('  ${cons.name}(${_commas(thisParams)});');
+    }
 
     // isCons
     if (config.isGetters) {
-      for (final c in def.constructors) {
-        writeLn('  bool get is${c.name} => ${c == cons};');
-      }
+      writeLn('  bool get is${cons.name} => true;');
     }
 
     // asCons
     if (config.asGetters) {
-      for (final c in def.constructors) {
-        final rhs = c == cons ? 'this' : 'null';
-        writeLn('  ${c.name}${typeArgs} get as${c.name} => $rhs;');
-      }
+      writeLn('  ${cons.name}${typeArgs} get as${cons.name} => this;');
     }
 
     // ==
@@ -151,8 +126,13 @@ class _Generator {
 
     // hashCode
     if (config.equality) {
-      writeLn('  int get hashCode {');
-      writeLn('    int result = 1;');
+      if (!config.finalFields) {
+        writeLn('  int get hashCode {');
+      } else {
+        final params = _commas(cons.parameters.map((p) => p.name));
+        writeLn('  static int _hashCode($params) {');
+      }
+      writeLn('    int result = "${cons.name}".hashCode;');
       for (final p in cons.parameters) {
         writeLn('    result = 31 * result + ${p.name}.hashCode;');
       }
@@ -170,10 +150,62 @@ class _Generator {
 
     writeLn('}');
   }
+
+  void generateSuperClass(DataTypeDefinition def) {
+    final typeArgs = _typeArgs(def.variables);
+
+    writeLn('abstract class ${_typeRepr(def)} {');
+
+    // isCons
+    if (config.isGetters) {
+      for (final c in def.constructors) {
+        writeLn('  bool get is${c.name} => false;');
+      }
+    }
+
+    // asCons
+    if (config.asGetters) {
+      for (final c in def.constructors) {
+        writeLn('  ${c.name}${typeArgs} get as${c.name} => null;');
+      }
+    }
+    writeLn('}');
+  }
+
+  void generateDefinition(DataTypeDefinition def) {
+    generateSuperClass(def);
+    writeLn('');
+    for (final cons in def.constructors) {
+      generateConstructorClass(def, cons);
+      writeLn('');
+    }
+  }
+
+  void generateImports() {
+    bool written;
+    if (config.parser) {
+      writeLn("import 'package:parsers/parsers.dart' as parsers;");
+      written = true;
+    }
+    if (config.enumerator) {
+      writeLn("import 'package:enumerators/enumerators.dart' as enumerators;");
+      writeLn("import 'package:enumerators/combinators.dart' as combinators;");
+      written = true;
+    }
+    if (written) {
+      writeLn('');
+    }
+  }
+
+  generateImports();
+  for (final def in defs) {
+    generateDefinition(def);
+    writeLn('');
+  }
 }
 
 String generate(List<DataTypeDefinition> defs, Configuration configuration) {
   StringBuffer buffer = new StringBuffer();
-  new _Generator(configuration, buffer).generate(defs);
+  _generate(configuration, buffer, defs);
   return buffer.toString();
 }
