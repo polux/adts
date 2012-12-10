@@ -17,6 +17,7 @@ class Configuration {
   final bool parser;
   final bool enumerator;
   final bool visitor;
+  final bool matchMethod;
   final bool extractor;
   final bool toJson;
   final bool fromJson;
@@ -28,9 +29,10 @@ class Configuration {
     bool equality: true,
     bool toStringMethod: true,
     bool fromString: true,
-    bool parser: true,
-    bool enumerator: true,
+    bool parser: false,
+    bool enumerator: false,
     bool visitor: true,
+    bool matchMethod: true,
     bool extractor: true,
     bool toJson: true,
     bool fromJson: true
@@ -43,6 +45,7 @@ class Configuration {
      , this.parser = parser
      , this.enumerator = enumerator
      , this.visitor = visitor
+     , this.matchMethod = matchMethod
      , this.extractor = extractor
      , this.toJson = toJson
      , this.fromJson = fromJson;
@@ -54,11 +57,22 @@ _lines(List ss) =>
 _commas(List ss) =>
     Strings.join(ss, ', ');
 
-String _typeArgs(List args) =>
-    args.isEmpty ? '' : '<${_commas(args)}>';
+String _typeArgs(List args, [String extraArg]) {
+  if (extraArg != null) {
+    args = new List.from(args)..add(extraArg);
+  }
+  return args.isEmpty ? '' : '<${_commas(args)}>';
+}
 
 String _typeRepr(DataTypeDefinition def) =>
     "${def.name}${_typeArgs(def.variables)}";
+
+String _freshTypeVar(String v, List<String> typeVars) {
+  while(typeVars.contains(v)) {
+    v = '${v}_';
+  }
+  return v;
+}
 
 String _generate(Configuration config, StringBuffer buffer,
                  List<DataTypeDefinition> defs) {
@@ -148,6 +162,14 @@ String _generate(Configuration config, StringBuffer buffer,
       writeLn('  }');
     }
 
+    // accept
+    if (config.visitor) {
+      final xargs = _typeArgs(def.variables, 'Object');
+      writeLn('  Object accept(${def.name}Visitor${xargs} visitor) {');
+      writeLn('    return visitor.visit${cons.name}(this);');
+      writeLn('  }');
+    }
+
     writeLn('}');
   }
 
@@ -169,12 +191,36 @@ String _generate(Configuration config, StringBuffer buffer,
         writeLn('  ${c.name}${typeArgs} get as${c.name} => null;');
       }
     }
+
+    // visitor
+    // accept
+    if (config.visitor) {
+      final xargs = _typeArgs(def.variables, 'Object');
+      writeLn('  Object accept(${def.name}Visitor${xargs} visitor);');
+    }
+
+    writeLn('}');
+  }
+
+  void generateVisitorClass(DataTypeDefinition def) {
+    final fresh = _freshTypeVar('R', def.variables);
+    final args = _typeArgs(def.variables);
+    final xargs = _typeArgs(def.variables, fresh);
+    writeLn('abstract class ${def.name}Visitor${xargs} {');
+    for (final c in def.constructors) {
+      final low = c.name.toLowerCase();
+      writeLn('  $fresh visit${c.name}(${c.name}${args} ${low});');
+    }
     writeLn('}');
   }
 
   void generateDefinition(DataTypeDefinition def) {
     generateSuperClass(def);
     writeLn('');
+    if (config.visitor) {
+      generateVisitorClass(def);
+      writeLn('');
+    }
     for (final cons in def.constructors) {
       generateConstructorClass(def, cons);
       writeLn('');
@@ -182,7 +228,7 @@ String _generate(Configuration config, StringBuffer buffer,
   }
 
   void generateImports() {
-    bool written;
+    bool written = false;
     if (config.parser) {
       writeLn("import 'package:parsers/parsers.dart' as parsers;");
       written = true;

@@ -38,6 +38,11 @@ BSD-style license that can be found in the LICENSE file.
     <input type="checkbox" bind-checked="toStringMethod" />
     <code>toString</code>
   </label>
+
+  <label>
+    <input type="checkbox" bind-checked="visitor" />
+    <code>visitors</code>
+  </label>
 </div>
 
 <code>
@@ -64,6 +69,7 @@ bool isGetters = true;
 bool asGetters = true;
 bool equality = true;
 bool toStringMethod = true;
+bool visitor = true;
 
 String get generated {
   final parseResult = adtParser.run(input);
@@ -73,7 +79,8 @@ String get generated {
       isGetters: isGetters,
       asGetters: asGetters,
       equality: equality,
-      toStringMethod: toStringMethod
+      toStringMethod: toStringMethod,
+      visitor: visitor
     );
     return generate(parseResult.value, config);
   } else {
