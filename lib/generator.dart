@@ -88,6 +88,19 @@ String _generate(Configuration config, StringBuffer buffer,
     write('$s\n');
   }
 
+  void generateMatchMethodPrefix(DataTypeDefinition def) {
+    List<String> acc = [];
+    for (final c in def.constructors) {
+      final low = c.name.toLowerCase();
+      final typedParams = _commas(
+          c.parameters.map((p) => '${p.type} ${p.name}'));
+      acc.add('Object $low($typedParams)');
+    }
+    final sep = ',\n                ';
+    final args = Strings.join(acc, sep);
+    write('  Object match({$args})');
+  }
+
   void generateConstructorClass(DataTypeDefinition def, Constructor cons) {
     final typeArgs = _typeArgs(def.variables);
     final typedParams = _commas(
@@ -176,6 +189,16 @@ String _generate(Configuration config, StringBuffer buffer,
       writeLn('  }');
     }
 
+    // match
+    if (config.matchMethod) {
+      generateMatchMethodPrefix(def);
+      writeLn(' {');
+      final args = _commas(cons.parameters.map((p) => p.name));
+      final low = cons.name.toLowerCase();
+      writeLn('    return $low($args);');
+      writeLn('  }');
+    }
+
     // with method
     if (config.withMethod && !cons.parameters.isEmpty) {
       writeLn('  ${cons.name}${typeArgs} with({$typedParams}) {');
@@ -211,11 +234,16 @@ String _generate(Configuration config, StringBuffer buffer,
       }
     }
 
-    // visitor
     // accept
     if (config.visitor) {
       final xargs = _typeArgs(def.variables, 'Object');
       writeLn('  Object accept(${def.name}Visitor${xargs} visitor);');
+    }
+
+    // match
+    if (config.matchMethod) {
+      generateMatchMethodPrefix(def);
+      writeLn(';');
     }
 
     writeLn('}');
