@@ -3096,8 +3096,8 @@ $$._generate_generateMatchMethodPrefix = {"":"Closure;write_2",
     typedParams = $.Strings_join($.getInterceptor$JSArray(t2).map$1(t2, new $._generate_generateMatchMethodPrefix_anon()), ", ");
     acc.push("Object " + $.S(low) + "(" + typedParams + ")");
   }
-  args = $.Strings_join(acc, ",\n               ");
-  this.write_2.call$1("  Object match(" + args + ")");
+  args = $.Strings_join(acc, ",\n                ");
+  this.write_2.call$1("  Object match({" + args + "})");
 }
 };
 
