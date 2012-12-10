@@ -3262,10 +3262,22 @@ $$._generate_generateSuperClass = {"":"Closure;generateMatchMethodPrefix_9,confi
       t1.call$1("  " + $.S(t4.get$name()) + typeArgs + " get as" + $.S(t4.get$name()) + " => null;");
     }
   if (t2.get$visitor() === true) {
+    t3 = def.get$constructors();
+    t4 = $.getInterceptor$JSStringJSArray(t3).get$isEmpty(t3) !== true;
+    t3 = t4;
+  } else
+    t3 = false;
+  if (t3) {
     xargs = $._typeArgs(def.get$variables(), "Object");
     t1.call$1("  Object accept(" + $.S(def.get$name()) + "Visitor" + xargs + " visitor);");
   }
   if (t2.get$matchMethod() === true) {
+    t2 = def.get$constructors();
+    t3 = $.getInterceptor$JSStringJSArray(t2).get$isEmpty(t2) !== true;
+    t2 = t3;
+  } else
+    t2 = false;
+  if (t2) {
     this.generateMatchMethodPrefix_9.call$1(def);
     t1.call$1(";");
   }
@@ -3276,6 +3288,9 @@ $$._generate_generateSuperClass = {"":"Closure;generateMatchMethodPrefix_9,confi
 $$._generate_generateVisitorClass = {"":"Closure;writeLn_10",
  call$1: function(def) {
   var t1, v, v0, args, xargs, t2, t3, t4, low;
+  t1 = def.get$constructors();
+  if ($.getInterceptor$JSStringJSArray(t1).get$isEmpty(t1) === true)
+    return;
   t1 = def.get$variables();
   for (v = "R"; $.getInterceptor$JSStringJSArray(t1).contains$1(t1, v) === true; v = v0)
     v0 = v + "_";
