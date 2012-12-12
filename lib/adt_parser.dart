@@ -26,8 +26,8 @@ class _AdtParsers extends LanguageParsers {
       ^ (c, ts) => new Constructor(c, ts);
 
   get parameter =>
-      typeAppl()
-      + identifier
+      (typeAppl() % 'type')
+      + (identifier % 'parameter')
       ^ (t, p) => new Parameter(t, p);
 
   typeAppl() =>

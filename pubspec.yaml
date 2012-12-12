@@ -1,6 +1,5 @@
 name:  adts
 description: Algebraic Datatypes to Dart compiler
 dependencies:
-  parsers:
-    git: file:///home/polux/projects/parsers/
+  parsers: any
   web_ui: any
