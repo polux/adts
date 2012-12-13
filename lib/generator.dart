@@ -78,7 +78,18 @@ String _freshTypeVar(String v, List<String> typeVars) {
 }
 
 String _generate(Configuration config, StringBuffer buffer,
-                 List<DataTypeDefinition> defs) {
+                 List<DataTypeDefinition> defs,
+                 List<Class> classes) {
+
+  Map<String, Class> classMap = {};
+  for (final c in classes) {
+    classMap[c.name] = c;
+  }
+
+  Method userMethod(String className, String methodName) {
+    Class cl = classMap[className];
+    return cl == null ? null : cl.methods[methodName];
+  }
 
   void write(String s) {
     buffer.add(s);
@@ -300,8 +311,8 @@ String _generate(Configuration config, StringBuffer buffer,
   }
 }
 
-String generate(List<DataTypeDefinition> defs, Configuration configuration) {
+String generate(Module module, Configuration configuration) {
   StringBuffer buffer = new StringBuffer();
-  _generate(configuration, buffer, defs);
+  _generate(configuration, buffer, module.adts, module.classes);
   return buffer.toString();
 }

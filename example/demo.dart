@@ -9,13 +9,17 @@ import 'package:adts/adt_parser.dart';
 import 'package:adts/generator.dart';
 
 main() {
-  final s = '''
+  final s = r'''
     /* an example featuring the whole syntax */
 
     adt List<A> = Nil() | Cons(A head, List<A> tail)
 
     adt Foo = Bar() | Baz(int n)
+
+    class Cons {
+      String toString() => '$head::$tail';
+    }
   ''';
-  final ast = adtParser.parse(s);
-  print(generate(ast, new Configuration()));
+  final module = moduleParser.parse(s);
+  print(generate(module, new Configuration()));
 }

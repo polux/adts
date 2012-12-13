@@ -84,7 +84,7 @@ bool withMethod = true;
 bool matchMethod = true;
 
 String get generated {
-  final parseResult = adtParser.run(input);
+  final parseResult = moduleParser.run(input);
   if (parseResult.isSuccess) {
     final config = new Configuration(
       finalFields: finalFields,

@@ -5,12 +5,25 @@
 
 library ast;
 
+import 'package:persistent/persistent.dart';
+
 _toString(x) => x.toString();
 
+class Module {
+  final List<DataTypeDefinition> adts;
+  final List<Class> classes;
+
+  Module(this.adts, this.classes);
+
+  String toString() {
+    return 'Module($adts, $classes)';
+  }
+}
+
 class DataTypeDefinition {
-  String name;
-  List<String> variables;
-  List<Constructor> constructors;
+  final String name;
+  final List<String> variables;
+  final List<Constructor> constructors;
 
   DataTypeDefinition(this.name, this.variables, this.constructors);
 
@@ -22,8 +35,8 @@ class DataTypeDefinition {
 }
 
 class Constructor {
-  String name;
-  List<Parameter> parameters;
+  final String name;
+  final List<Parameter> parameters;
 
   Constructor(this.name, this.parameters);
 
@@ -34,8 +47,8 @@ class Constructor {
 }
 
 class Parameter {
-  String name;
-  TypeAppl type;
+  final String name;
+  final TypeAppl type;
 
   Parameter(this.type, this.name);
 
@@ -43,8 +56,8 @@ class Parameter {
 }
 
 class TypeAppl {
-  String name;
-  List<Type> arguments;
+  final String name;
+  final List<Type> arguments;
 
   TypeAppl(this.name, this.arguments);
 
@@ -56,4 +69,30 @@ class TypeAppl {
       return "$name<$args>";
     }
   }
+}
+
+class Class {
+  final String name;
+  Map<String,Method> methods;
+
+  Class(this.name, methods) {
+    this.methods = {};
+    for (final m in methods) {
+      this.methods[m.name] = m;
+    }
+  }
+
+  String toString() {
+    return 'Class($name, $methods)';
+  }
+}
+
+
+class Method {
+  final String name;
+  final String text;
+
+  Method(this.name, this.text);
+
+  toString() => 'Method($name, $text)';
 }
