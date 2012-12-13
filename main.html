@@ -7,56 +7,70 @@ BSD-style license that can be found in the LICENSE file.
 --><html lang="en"><head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <style>
+    #left { float:left; width:50%; }
+    #right { float:right; width: 50%; }
+    #generated { background-color: #f5f5f5; padding: 0.5em; }
+    #def { min-width: 95%; max-width: 95% }
+  </style>
   <title>Algebraic Datatypes for Dart</title>
 </head>
 <body>
 
-<textarea rows="29" cols="80" id="__e-0"></textarea>
-<div>
-  <label>
-    <input type="checkbox" id="__e-1">
-    final fields
-  </label>
+<div id="left">
+  <h2>Define</h2>
+  <textarea rows="30" id="def" spellcheck="false">  </textarea>
 
-  <label>
-    <input type="checkbox" id="__e-2">
-    <code>is</code> getters
-  </label>
+  <h2>Tune</h2>
+  <div>
+    <label>
+      <input type="checkbox" id="__e-0">
+      final fields
+    </label>
 
-  <label>
-    <input type="checkbox" id="__e-3">
-    <code>as</code> getters
-  </label>
+    <label>
+      <input type="checkbox" id="__e-1">
+      <code>is</code> getters
+    </label>
 
-  <label>
-    <input type="checkbox" id="__e-4">
-    <code>with</code> method
-  </label>
+    <label>
+      <input type="checkbox" id="__e-2">
+      <code>as</code> getters
+    </label>
 
-  <label>
-    <input type="checkbox" id="__e-5">
-    <code>==</code> and <code>hashCode</code>
-  </label>
+    <label>
+      <input type="checkbox" id="__e-3">
+      <code>with</code> method
+    </label>
 
-  <label>
-    <input type="checkbox" id="__e-6">
-    <code>toString</code>
-  </label>
+    <label>
+      <input type="checkbox" id="__e-4">
+      <code>==</code> and <code>hashCode</code>
+    </label>
 
-  <label>
-    <input type="checkbox" id="__e-7">
-    visitors
-  </label>
+    <label>
+      <input type="checkbox" id="__e-5">
+      <code>toString</code>
+    </label>
 
-  <label>
-    <input type="checkbox" id="__e-8">
-    <code>match</code> method ("inlined" visitor)
-  </label>
+    <label>
+      <input type="checkbox" id="__e-6">
+      visitors
+    </label>
+
+    <label>
+      <input type="checkbox" id="__e-7">
+      <code>match</code> method ("inlined" visitor)
+    </label>
+  </div>
 </div>
 
-<code>
-  <pre id="__e-10"></pre>
-</code>
+<div id="right">
+  <h2>Profit</h2>
+  <code>
+    <pre id="generated"></pre>
+  </code>
+</div>
 
   
 
