@@ -8,58 +8,68 @@ BSD-style license that can be found in the LICENSE file.
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <link rel="stylesheet" href="main.css">
   <title>Algebraic Datatypes for Dart</title>
 </head>
 <body>
 
-<textarea rows="29" cols="80" bind-value="input"></textarea>
-<div>
-  <label>
-    <input type="checkbox" bind-checked="finalFields" />
-    final fields
-  </label>
+<div id='left'>
+  <h2>Define</h2>
+  <textarea rows='30' id='def' spellcheck='false' bind-value='input'>
+  </textarea>
 
-  <label>
-    <input type="checkbox" bind-checked="isGetters" />
-    <code>is</code> getters
-  </label>
+  <h2>Tune</h2>
+  <div>
+    <label>
+      <input type="checkbox" bind-checked="finalFields" />
+      final fields
+    </label>
 
-  <label>
-    <input type="checkbox" bind-checked="asGetters" />
-    <code>as</code> getters
-  </label>
+    <label>
+      <input type="checkbox" bind-checked="isGetters" />
+      <code>is</code> getters
+    </label>
 
-  <label>
-    <input type="checkbox" bind-checked="withMethod" />
-    <code>with</code> method
-  </label>
+    <label>
+      <input type="checkbox" bind-checked="asGetters" />
+      <code>as</code> getters
+    </label>
 
-  <label>
-    <input type="checkbox" bind-checked="equality" />
-    <code>==</code> and <code>hashCode</code>
-  </label>
+    <label>
+      <input type="checkbox" bind-checked="withMethod" />
+      <code>with</code> method
+    </label>
 
-  <label>
-    <input type="checkbox" bind-checked="toStringMethod" />
-    <code>toString</code>
-  </label>
+    <label>
+      <input type="checkbox" bind-checked="equality" />
+      <code>==</code> and <code>hashCode</code>
+    </label>
 
-  <label>
-    <input type="checkbox" bind-checked="visitor" />
-    visitors
-  </label>
+    <label>
+      <input type="checkbox" bind-checked="toStringMethod" />
+      <code>toString</code>
+    </label>
 
-  <label>
-    <input type="checkbox" bind-checked="matchMethod" />
-    <code>match</code> method ("inlined" visitor)
-  </label>
+    <label>
+      <input type="checkbox" bind-checked="visitor" />
+      visitors
+    </label>
+
+    <label>
+      <input type="checkbox" bind-checked="matchMethod" />
+      <code>match</code> method ("inlined" visitor)
+    </label>
+  </div>
 </div>
 
-<code>
-  <pre>
+<div id='right'>
+  <h2>Profit</h2>
+  <code>
+    <pre id='generated'>
 {{generated}}
-  </pre>
-</code>
+    </pre>
+  </code>
+</div>
 
   <script type="application/dart">
 import 'dart:html';
