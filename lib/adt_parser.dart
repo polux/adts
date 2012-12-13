@@ -9,7 +9,7 @@ import 'package:adts/ast.dart';
 import 'package:parsers/parsers.dart';
 
 class _AdtParsers extends LanguageParsers {
-  _AdtParsers() : super(reservedNames: ['adt', 'class', 'get'],
+  _AdtParsers() : super(reservedNames: ['data', 'class', 'get'],
                         nestedComments: true);
 
   get module =>
@@ -22,7 +22,7 @@ class _AdtParsers extends LanguageParsers {
   get adt => whiteSpace > (def.many < eof);
 
   get def =>
-      reserved['adt']
+      reserved['data']
       + identifier
       + angles(identifier.sepBy(comma)).orElse([])
       + symbol('=')
@@ -59,17 +59,18 @@ class _AdtParsers extends LanguageParsers {
       + reserved['get'].record
       + identifier.record
       + methodBody.record
-      ^ (t, g, n, b) => new Method(n, '$t$g$n$b');
+      ^ (t, g, n, b) => new Method(n.trim(), '$t$g$n$b');
 
   get regularMethod =>
       typeAppl().record
       + identifier.record
       + parens(parameter.sepBy(comma)).record
       + methodBody.record
-      ^ (t, n, as, b) => new Method(n, '$t$n$as$b');
+      ^ (t, n, as, b) => new Method(n.trim(), '$t$n$as$b');
 
   get methodBody =>
-      string('=>') > anyChar.skipManyUntil(char(';'))
+      char(';')
+    | string('=>') > anyChar.skipManyUntil(char(';'))
     | multiLineBody();
 
   multiLineBody() => char('{') > inMethodBody();

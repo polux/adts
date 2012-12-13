@@ -12,7 +12,7 @@ BSD-style license that can be found in the LICENSE file.
 </head>
 <body>
 
-<textarea rows="5" cols="100" bind-value="input"></textarea>
+<textarea rows="29" cols="80" bind-value="input"></textarea>
 <div>
   <label>
     <input type="checkbox" bind-checked="finalFields" />
@@ -67,11 +67,35 @@ import 'package:web_ui/web_ui.dart';
 import 'package:adts/adt_parser.dart';
 import 'package:adts/generator.dart';
 
-String input = '''
-adt List<A> = Nil() | Cons(A head, List<A> tail)
+String input = r'''
+data LinkedList<A> = Nil() | Cons(A head, LinkedList<A> tail)
 
-adt Map<K, V> = Fork(Map<K, V> left, Map<K,V> right)
+data Map<K, V> = Fork(Map<K, V> left, Map<K,V> right)
               | Leaf(K key, V value)
+
+// we can add methods to generated classes ...
+
+class LinkedList {
+  List<A> toList() { var acc = []; _toList(acc); return acc; }
+  void _toList(List<A> acc);
+}
+
+class Nil {
+  void _toList(List<A> acc) {}
+}
+
+class Cons {
+  void _toList(List<A> acc) { acc.add(head); tail._toList(acc); }
+}
+
+// ... as well as override generated methods
+
+class MapVisitor {
+  R visitFork(Fork<K, V> fork) {
+    fork.left.accept(this);
+    fork.right.accept(this);
+  }
+}
 ''';
 
 bool finalFields = true;

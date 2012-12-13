@@ -10,15 +10,19 @@ import 'package:adts/generator.dart';
 
 main() {
   final s = r'''
-    /* an example featuring the whole syntax */
+/* an example featuring the whole syntax */
 
-    adt List<A> = Nil() | Cons(A head, List<A> tail)
+adt List<A> = Nil() | Cons(A head, List<A> tail)
 
-    adt Foo = Bar() | Baz(int n)
+class Cons {
+  String toString() {
+    return '$head::$tail';
+  }
+}
 
-    class Cons {
-      String toString() => '$head::$tail';
-    }
+class Nil {
+  int get hashCode => 0;
+}
   ''';
   final module = moduleParser.parse(s);
   print(generate(module, new Configuration()));

@@ -86,9 +86,9 @@ String _generate(Configuration config, StringBuffer buffer,
     classMap[c.name] = c;
   }
 
-  Method userMethod(String className, String methodName) {
-    Class cl = classMap[className];
-    return cl == null ? null : cl.methods[methodName];
+  bool overriden(String className, String methodName) {
+    return classMap.containsKey(className)
+        && classMap[className].methods.containsKey(methodName);
   }
 
   void write(String s) {
@@ -147,17 +147,19 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // isCons
-    if (config.isGetters) {
-      writeLn('  bool get is${cons.name} => true;');
+    final isCons = 'is${cons.name}';
+    if (config.isGetters && !overriden(cons.name, isCons)) {
+      writeLn('  bool get $isCons => true;');
     }
 
     // asCons
-    if (config.asGetters) {
-      writeLn('  ${cons.name}${typeArgs} get as${cons.name} => this;');
+    final asCons = 'as${cons.name}';
+    if (config.asGetters && !overriden(cons.name, asCons)) {
+      writeLn('  ${cons.name}${typeArgs} get $asCons => this;');
     }
 
     // ==
-    if (config.equality) {
+    if (config.equality && !overriden(cons.name, '==')) {
       writeLn('  bool operator ==(other) {');
       writeLn('    return identical(this, other)');
       write('        || (other is ${cons.name}${typeArgs}');
@@ -169,7 +171,7 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // hashCode
-    if (config.equality) {
+    if (config.equality && !overriden(cons.name, 'hashCode')) {
       if (!config.finalFields) {
         writeLn('  int get hashCode {');
       } else {
@@ -185,7 +187,7 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // toString
-    if (config.toStringMethod) {
+    if (config.toStringMethod && !overriden(cons.name, 'toString')) {
       writeLn('  String toString() {');
       final List args = cons.parameters.map((p) => '\$${p.name}');
       writeLn("    return '${cons.name}(${_commas(args)})';");
@@ -193,7 +195,7 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // accept
-    if (config.visitor) {
+    if (config.visitor && !overriden(cons.name, 'accept')) {
       final xargs = _typeArgs(def.variables, 'Object');
       writeLn('  Object accept(${def.name}Visitor${xargs} visitor) {');
       writeLn('    return visitor.visit${cons.name}(this);');
@@ -201,7 +203,7 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // match
-    if (config.matchMethod) {
+    if (config.matchMethod && !overriden(cons.name, 'match')) {
       generateMatchMethodPrefix(def);
       writeLn(' {');
       final args = _commas(cons.parameters.map((p) => p.name));
@@ -211,7 +213,8 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     // with method
-    if (config.withMethod && !cons.parameters.isEmpty) {
+    if (config.withMethod && !cons.parameters.isEmpty
+        && !overriden(cons.name, 'with')) {
       writeLn('  ${cons.name}${typeArgs} with({$typedParams}) {');
       writeLn('    return new ${cons.name}(');
       final acc = [];
@@ -221,6 +224,14 @@ String _generate(Configuration config, StringBuffer buffer,
       write(Strings.join(acc, ',\n'));
       writeLn(');');
       writeLn('  }');
+    }
+
+    // overriden/extra methods
+    final userClass = classMap[cons.name];
+    if (userClass != null) {
+      userClass.methods.forEach((_, m) {
+        writeLn('  ${m.text}');
+      });
     }
 
     writeLn('}');
@@ -234,27 +245,45 @@ String _generate(Configuration config, StringBuffer buffer,
     // isCons
     if (config.isGetters) {
       for (final c in def.constructors) {
-        writeLn('  bool get is${c.name} => false;');
+        final isCons = 'is${c.name}';
+        if (!overriden(def.name, isCons)) {
+          writeLn('  bool get $isCons => false;');
+        }
       }
     }
 
     // asCons
     if (config.asGetters) {
       for (final c in def.constructors) {
-        writeLn('  ${c.name}${typeArgs} get as${c.name} => null;');
+        final asCons = 'as${c.name}';
+        if (!overriden(def.name, asCons)) {
+          writeLn('  ${c.name}${typeArgs} get $asCons => null;');
+        }
       }
     }
 
     // accept
-    if (config.visitor && !def.constructors.isEmpty) {
+    if (config.visitor
+        && !def.constructors.isEmpty
+        && !overriden(def.name, 'accept')) {
       final xargs = _typeArgs(def.variables, 'Object');
       writeLn('  Object accept(${def.name}Visitor${xargs} visitor);');
     }
 
     // match
-    if (config.matchMethod && !def.constructors.isEmpty) {
+    if (config.matchMethod
+        && !def.constructors.isEmpty
+        && !overriden(def.name, 'accept')) {
       generateMatchMethodPrefix(def);
       writeLn(';');
+    }
+
+    // overriden/extra methods
+    final userClass = classMap[def.name];
+    if (userClass != null) {
+      userClass.methods.forEach((_, m) {
+        writeLn('  ${m.text}');
+      });
     }
 
     writeLn('}');
@@ -267,11 +296,27 @@ String _generate(Configuration config, StringBuffer buffer,
     final fresh = _freshTypeVar('R', def.variables);
     final args = _typeArgs(def.variables);
     final xargs = _typeArgs(def.variables, fresh);
-    writeLn('abstract class ${def.name}Visitor${xargs} {');
+    final visitorName = '${def.name}Visitor';
+
+    writeLn('abstract class $visitorName${xargs} {');
+
+    // visit methods
     for (final c in def.constructors) {
       final low = c.name.toLowerCase();
-      writeLn('  $fresh visit${c.name}(${c.name}${args} ${low});');
+      final visitCons = 'visit${c.name}';
+      if (!overriden(visitorName, visitCons)) {
+        writeLn('  $fresh $visitCons(${c.name}${args} ${low});');
+      }
     }
+
+    // overriden/extra methods
+    final userClass = classMap[visitorName];
+    if (userClass != null) {
+      userClass.methods.forEach((_, m) {
+        writeLn('  ${m.text}');
+      });
+    }
+
     writeLn('}');
   }
 
