@@ -12,7 +12,7 @@ main() {
   final s = r'''
 /* an example featuring the whole syntax */
 
-adt List<A> = Nil() | Cons(A head, List<A> tail)
+data List<A> = Nil() | Cons(A head, List<A> tail)
 
 class Cons {
   String toString() {
