@@ -8,9 +8,18 @@ library adt_parser;
 import 'package:adts/ast.dart';
 import 'package:parsers/parsers.dart';
 
+final _reserved = ['data', 'class', 'get', 'set', 'operator'];
+final _operators = ['==', '~', '[]', '[]=', '*', '/', '%', '~/', '+',
+                    '<<', '>>>', '>>', '>=', '>', '<=', '<', '&', '^', '|'];
+
 class _AdtParsers extends LanguageParsers {
-  _AdtParsers() : super(reservedNames: ['data', 'class', 'get'],
-                        nestedComments: true);
+
+  Parser op;
+
+  _AdtParsers() : super(reservedNames: _reserved,
+                        nestedComments: true) {
+    op = choice(_operators.map(symbol));
+  }
 
   get module =>
       whiteSpace
@@ -52,7 +61,7 @@ class _AdtParsers extends LanguageParsers {
   get classBody => method.many;
 
   get method => lexeme(_method);
-  get _method => getMethod | regularMethod;
+  get _method => getMethod | setMethod | operatorMethod | regularMethod;
 
   get getMethod =>
       typeAppl().record
@@ -60,6 +69,21 @@ class _AdtParsers extends LanguageParsers {
       + identifier.record
       + methodBody.record
       ^ (t, g, n, b) => new Method(n.trim(), '$t$g$n$b');
+
+  get setMethod =>
+      reserved['set']
+      + identifier.record
+      + parens(parameter).record
+      + methodBody.record
+      ^ (s, n, a, b) => new Method(n.trim(), '$s$n$a$b');
+
+  get operatorMethod =>
+      typeAppl().record
+      + reserved['operator']
+      + op.record
+      + parens(parameter.sepBy(comma)).record
+      + methodBody.record
+      ^ (t, o, n, as, b) => new Method(n.trim(), '$t$o$n$as$b');
 
   get regularMethod =>
       typeAppl().record
