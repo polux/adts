@@ -18,7 +18,7 @@ class _AdtParsers extends LanguageParsers {
 
   _AdtParsers() : super(reservedNames: _reserved,
                         nestedComments: true) {
-    op = choice(_operators.map(symbol));
+    op = choice(_operators.mappedBy(symbol));
   }
 
   get module =>

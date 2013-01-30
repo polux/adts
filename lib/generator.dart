@@ -104,7 +104,7 @@ String _generate(Configuration config, StringBuffer buffer,
     for (final c in def.constructors) {
       final low = c.name.toLowerCase();
       final typedParams = _commas(
-          c.parameters.map((p) => '${p.type} ${p.name}'));
+          c.parameters.mappedBy((p) => '${p.type} ${p.name}'));
       acc.add('Object $low($typedParams)');
     }
     final sep = ',\n                ';
@@ -115,7 +115,7 @@ String _generate(Configuration config, StringBuffer buffer,
   void generateConstructorClass(DataTypeDefinition def, Constructor cons) {
     final typeArgs = _typeArgs(def.variables);
     final typedParams = _commas(
-        cons.parameters.map((p) => '${p.type} ${p.name}'));
+        cons.parameters.mappedBy((p) => '${p.type} ${p.name}'));
 
     writeLn('class ${cons.name}${typeArgs} extends ${_typeRepr(def)} {');
 
@@ -138,11 +138,11 @@ String _generate(Configuration config, StringBuffer buffer,
         first = false;
       }
       final sep = first ? ' :' : '\n      ,';
-      final params = cons.parameters.map((p) => p.name);
+      final params = cons.parameters.mappedBy((p) => p.name);
       writeLn('$sep this.hashCode = '
               '${cons.name}._hashCode(${_commas(params)});');
     } else {
-      final thisParams = cons.parameters.map((p) => 'this.${p.name}');
+      final thisParams = cons.parameters.mappedBy((p) => 'this.${p.name}');
       writeLn('  ${cons.name}(${_commas(thisParams)});');
     }
 
@@ -175,7 +175,7 @@ String _generate(Configuration config, StringBuffer buffer,
       if (!config.finalFields) {
         writeLn('  int get hashCode {');
       } else {
-        final params = _commas(cons.parameters.map((p) => p.name));
+        final params = _commas(cons.parameters.mappedBy((p) => p.name));
         writeLn('  static int _hashCode($params) {');
       }
       writeLn('    int result = "${cons.name}".hashCode;');
@@ -189,7 +189,7 @@ String _generate(Configuration config, StringBuffer buffer,
     // toString
     if (config.toStringMethod && !overriden(cons.name, 'toString')) {
       writeLn('  String toString() {');
-      final List args = cons.parameters.map((p) => '\$${p.name}');
+      final List args = cons.parameters.mappedBy((p) => '\$${p.name}');
       writeLn("    return '${cons.name}(${_commas(args)})';");
       writeLn('  }');
     }
@@ -206,7 +206,7 @@ String _generate(Configuration config, StringBuffer buffer,
     if (config.matchMethod && !overriden(cons.name, 'match')) {
       generateMatchMethodPrefix(def);
       writeLn(' {');
-      final args = _commas(cons.parameters.map((p) => p.name));
+      final args = _commas(cons.parameters.mappedBy((p) => p.name));
       final low = cons.name.toLowerCase();
       writeLn('    return $low($args);');
       writeLn('  }');

@@ -1,5 +1,6 @@
-name:  adts
+name: adts
 description: Algebraic Datatypes to Dart compiler
 dependencies:
-  parsers: any
+  browser: any
   web_ui: any
+  parsers: any
