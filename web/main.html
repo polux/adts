@@ -41,8 +41,8 @@ BSD-style license that can be found in the LICENSE file.
     </label>
 
     <label>
-      <input type="checkbox" bind-checked="withMethod" />
-      <code>with</code> method
+      <input type="checkbox" bind-checked="copyMethod" />
+      <code>copy</code> method
     </label>
 
     <label>
@@ -119,7 +119,7 @@ bool asGetters = true;
 bool equality = true;
 bool toStringMethod = true;
 bool visitor = true;
-bool withMethod = true;
+bool copyMethod = true;
 bool matchMethod = true;
 
 String get generated {
@@ -129,7 +129,7 @@ String get generated {
       finalFields: finalFields,
       isGetters: isGetters,
       asGetters: asGetters,
-      withMethod: withMethod,
+      copyMethod: copyMethod,
       equality: equality,
       toStringMethod: toStringMethod,
       visitor: visitor,

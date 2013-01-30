@@ -11,7 +11,7 @@ class Configuration {
   final bool finalFields;
   final bool isGetters;
   final bool asGetters;
-  final bool withMethod;
+  final bool copyMethod;
   final bool equality;
   final bool toStringMethod;
   final bool fromString;
@@ -27,7 +27,7 @@ class Configuration {
     bool finalFields: true,
     bool isGetters: true,
     bool asGetters: true,
-    bool withMethod: true,
+    bool copyMethod: true,
     bool equality: true,
     bool toStringMethod: true,
     bool fromString: true,
@@ -41,7 +41,7 @@ class Configuration {
   }) : this.finalFields = finalFields
      , this.isGetters = isGetters
      , this.asGetters = asGetters
-     , this.withMethod = withMethod
+     , this.copyMethod = copyMethod
      , this.equality = equality
      , this.toStringMethod = toStringMethod
      , this.fromString = fromString
@@ -212,10 +212,10 @@ String _generate(Configuration config, StringBuffer buffer,
       writeLn('  }');
     }
 
-    // with method
-    if (config.withMethod && !cons.parameters.isEmpty
-        && !overriden(cons.name, 'with')) {
-      writeLn('  ${cons.name}${typeArgs} with({$typedParams}) {');
+    // copy method
+    if (config.copyMethod && !cons.parameters.isEmpty
+        && !overriden(cons.name, 'copy')) {
+      writeLn('  ${cons.name}${typeArgs} copy({$typedParams}) {');
       writeLn('    return new ${cons.name}(');
       final acc = [];
       for (final p in cons.parameters) {
