@@ -55,10 +55,10 @@ class Configuration {
 }
 
 _lines(List ss) =>
-    Strings.join(ss, '\n');
+    ss.join('\n');
 
 _commas(List ss) =>
-    Strings.join(ss, ', ');
+    ss.join(', ');
 
 String _typeArgs(List args, [String extraArg]) {
   if (extraArg != null) {
@@ -108,7 +108,7 @@ String _generate(Configuration config, StringBuffer buffer,
       acc.add('Object $low($typedParams)');
     }
     final sep = ',\n                ';
-    final args = Strings.join(acc, sep);
+    final args = acc.join(sep);
     write('  Object match({$args})');
   }
 
@@ -221,7 +221,7 @@ String _generate(Configuration config, StringBuffer buffer,
       for (final p in cons.parameters) {
         acc.add('        ?${p.name} ? ${p.name} : this.${p.name}');
       }
-      write(Strings.join(acc, ',\n'));
+      write(acc.join(',\n'));
       writeLn(');');
       writeLn('  }');
     }

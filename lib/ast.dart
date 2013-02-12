@@ -28,8 +28,8 @@ class DataTypeDefinition {
   DataTypeDefinition(this.name, this.variables, this.constructors);
 
   String toString() {
-    String args = Strings.join(variables, ', ');
-    String constrs = Strings.join(constructors.mappedBy(_toString), ' | ');
+    String args = variables.join(', ');
+    String constrs = constructors.map(_toString).join(' | ');
     return "adt $name<$args> = $constrs";
   }
 }
@@ -41,7 +41,7 @@ class Constructor {
   Constructor(this.name, this.parameters);
 
   String toString() {
-    String params = Strings.join(parameters.mappedBy(_toString), ', ');
+    String params = parameters.map(_toString).join(', ');
     return "$name($params)";
   }
 }
@@ -65,7 +65,7 @@ class TypeAppl {
   String toString() {
     if (arguments.isEmpty) return name;
     else {
-      String args = Strings.join(arguments.mappedBy(_toString), ', ');
+      String args = arguments.map(_toString).join(', ');
       return "$name<$args>";
     }
   }
