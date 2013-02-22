@@ -12,8 +12,8 @@ else
   echo "done"
 fi
 
-echo "dart_analyzer lib/*.dart"
-results=`dart_analyzer lib/*.dart 2>&1`
+echo "dart_analyzer --work=/tmp lib/*.dart"
+results=`dart_analyzer --work=/tmp lib/*.dart 2>&1`
 
 if [ -n "$results" ]; then
     echo "$results"
