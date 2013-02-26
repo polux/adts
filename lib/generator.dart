@@ -124,12 +124,16 @@ String _generate(Configuration config, StringBuffer buffer,
       final modifier = config.finalFields ? 'final ' : '';
       writeLn('  $modifier$p;');
     }
-    if (config.finalFields && config.equality) {
+    if (config.finalFields
+        && config.equality
+        && !overriden(cons.name, 'hashCode')) {
       writeLn('  final int hashCode;');
     }
 
     // constructor
-    if (config.equality && config.finalFields) {
+    if (config.finalFields
+        && config.equality
+        && !overriden(cons.name, 'hashCode')) {
       write('  ${cons.name}($typedParams)');
       bool first = true;
       for (final p in cons.parameters) {
