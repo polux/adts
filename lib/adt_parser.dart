@@ -8,7 +8,7 @@ library adt_parser;
 import 'package:adts/ast.dart';
 import 'package:parsers/parsers.dart';
 
-final _reserved = ['data', 'class', 'get', 'set', 'operator'];
+final _reserved = ['data', 'class', 'get', 'set', 'operator', 'static'];
 final _operators = ['==', '~', '[]', '[]=', '*', '/', '%', '~/', '+',
                     '<<', '>>>', '>>', '>=', '>', '<=', '<', '&', '^', '|'];
 
@@ -86,11 +86,12 @@ class _AdtParsers extends LanguageParsers {
       ^ (t, o, n, as, b) => new Method(n.trim(), '$t$o$n$as$b');
 
   get regularMethod =>
-      typeAppl().record
+      reserved['static'].maybe.record
+      + typeAppl().record
       + identifier.record
       + parens(parameter.sepBy(comma)).record
       + methodBody.record
-      ^ (t, n, as, b) => new Method(n.trim(), '$t$n$as$b');
+      ^ (s, t, n, as, b) => new Method(n.trim(), '$s$t$n$as$b');
 
   get methodBody =>
       char(';')
