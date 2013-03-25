@@ -57,7 +57,7 @@ class Parameter {
 
 class TypeAppl {
   final String name;
-  final List<Type> arguments;
+  final List<TypeAppl> arguments;
 
   TypeAppl(this.name, this.arguments);
 
@@ -73,7 +73,7 @@ class TypeAppl {
 
 class Class {
   final String name;
-  Map<String,Method> methods;
+  Map<String, Method> methods;
 
   Class(this.name, methods) {
     this.methods = {};

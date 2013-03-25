@@ -64,6 +64,11 @@ BSD-style license that can be found in the LICENSE file.
       <input type="checkbox" bind-checked="matchMethod" />
       <code>match</code> method ("inlined" visitor)
     </label>
+
+    <label>
+      <input type="checkbox" bind-checked="toJson" />
+      <code>toJson</code>
+    </label>
   </div>
 </div>
 
@@ -85,8 +90,8 @@ import 'package:adts/generator.dart';
 String input = r'''
 data LinkedList<A> = Nil() | Cons(A head, LinkedList<A> tail)
 
-data Map<K, V> = Fork(Map<K, V> left, Map<K,V> right)
-               | Leaf(K key, V value)
+data TreeMap<K, V> = Fork(TreeMap<K, V> left, TreeMap<K,V> right)
+                   | Leaf(K key, V value)
 
 // we can add methods to generated classes ...
 
@@ -121,6 +126,7 @@ bool toStringMethod = true;
 bool visitor = true;
 bool copyMethod = true;
 bool matchMethod = true;
+bool toJson = true;
 
 String get generated {
   final parseResult = moduleParser.run(input);
@@ -133,7 +139,8 @@ String get generated {
       equality: equality,
       toStringMethod: toStringMethod,
       visitor: visitor,
-      matchMethod: matchMethod
+      matchMethod: matchMethod,
+      toJson: toJson
     );
     return generate(parseResult.value, config);
   } else {

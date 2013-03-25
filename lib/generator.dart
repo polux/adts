@@ -77,6 +77,20 @@ String _freshTypeVar(String v, List<String> typeVars) {
   return v;
 }
 
+bool _isAtom(TypeAppl type) {
+  final atoms = const ["int", "double", "num", "String"];
+  return atoms.contains(type.name) && type.arguments.isEmpty;
+}
+
+bool _isList0(TypeAppl type) {
+  return type.name == "List" && type.arguments.isEmpty;
+}
+
+bool _isList1(TypeAppl type) {
+  return type.name == "List" && type.arguments.length == 1;
+}
+
+
 String _generate(Configuration config, StringBuffer buffer,
                  List<DataTypeDefinition> defs,
                  List<Class> classes) {
@@ -99,6 +113,19 @@ String _generate(Configuration config, StringBuffer buffer,
     write('$s\n');
   }
 
+  bool isUnknownType(TypeAppl type) {
+    if (_isAtom(type) || _isList1(type)) {
+      return false;
+    }
+    final datatype = defs.firstWhere((d) => d.name == type.name,
+                                     orElse: () => null);
+    if (datatype != null
+        && datatype.variables.length == type.arguments.length) {
+      return false;
+    }
+    return true;
+  }
+
   void generateMatchMethodPrefix(DataTypeDefinition def) {
     List<String> acc = [];
     for (final c in def.constructors) {
@@ -110,6 +137,26 @@ String _generate(Configuration config, StringBuffer buffer,
     final sep = ',\n                ';
     final args = acc.join(sep);
     write('  Object match({$args})');
+  }
+
+  String jsonRecursiveCall(String superName, String name, TypeAppl type) {
+    if (_isAtom(type)) {
+      return name;
+    } else if (_isList1(type)) {
+      final typeArg = type.arguments[0];
+      if (_isAtom(typeArg)) {
+        return name;
+      } else {
+        return '$name.map((x) => '
+               '${jsonRecursiveCall(superName, 'x', typeArg)}).toList()';
+      }
+    } else if (_isList0(type)) {
+      return '$name.map($superName.dynamicToJson).toList()';
+    } else if (isUnknownType(type)) {
+      return '$superName.dynamicToJson($name)';
+    } else {
+      return '$name.toJson()';
+    }
   }
 
   void generateConstructorClass(DataTypeDefinition def, Constructor cons) {
@@ -230,6 +277,16 @@ String _generate(Configuration config, StringBuffer buffer,
       writeLn('  }');
     }
 
+    // toJson
+    if (config.toJson && !overriden(cons.name, 'toJson')) {
+      writeLn('  Map toJson() {');
+      final entries = cons.parameters.map((p) =>
+          "'${p.name}': ${jsonRecursiveCall(def.name, p.name, p.type)}");
+      final keyvals = [["'tag': '${cons.name}'"], entries].expand((x) => x);
+      writeLn("    return { ${_commas(keyvals)} };");
+      writeLn('  }');
+    }
+
     // overriden/extra methods
     final userClass = classMap[cons.name];
     if (userClass != null) {
@@ -239,6 +296,22 @@ String _generate(Configuration config, StringBuffer buffer,
     }
 
     writeLn('}');
+  }
+
+  bool constructorHasUnknownTypes(Constructor cons) {
+    bool typesHaveUnknownTypes(Iterable<TypeAppl> types) {
+      for (final ty in types) {
+        if (isUnknownType(ty)) return true;
+        if (typesHaveUnknownTypes(ty.arguments)) return true;
+      }
+      return false;
+    }
+
+    return typesHaveUnknownTypes(cons.parameters.map((p) => p.type));
+  }
+
+  bool datatypeHasUnknownTypes(DataTypeDefinition def) {
+    return def.constructors.any(constructorHasUnknownTypes);
   }
 
   void generateSuperClass(DataTypeDefinition def) {
@@ -280,6 +353,31 @@ String _generate(Configuration config, StringBuffer buffer,
         && !overriden(def.name, 'accept')) {
       generateMatchMethodPrefix(def);
       writeLn(';');
+    }
+
+    // toJson
+    if (config.toJson
+        && !def.constructors.isEmpty
+        && !overriden(def.name, 'toJson')) {
+      writeLn('  Map toJson();');
+    }
+
+    // dynamicToJson
+    if (config.toJson
+        && !def.constructors.isEmpty
+        && !overriden(def.name, 'dynamicToJson')
+        && datatypeHasUnknownTypes(def)) {
+      writeLn('  static dynamicToJson(object) {');
+      writeLn('    if (object == null || object is num || object is int '
+              '|| object is double');
+      writeLn('        || object is bool || object is String) {');
+      writeLn('      return object;');
+      writeLn('    } else if (object is List) {');
+      writeLn('      return object.map(dynamicToJson).toList();');
+      writeLn('    } else {');
+      writeLn('      return object.toJson();');
+      writeLn('    }');
+      writeLn('  }');
     }
 
     // overriden/extra methods

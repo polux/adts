@@ -10,7 +10,7 @@ import 'package:adts/generator.dart';
 
 main() {
   final s = r'''
-    data List<A> = Nil() | Cons(A head, List<A> tail)
+    data LinkedList<A> = Nil() | Cons(A head, LinkedList<A> tail)
 
     class Cons {
       String toString() {
