@@ -151,9 +151,9 @@ String _generate(Configuration config, StringBuffer buffer,
                '${jsonRecursiveCall(superName, 'x', typeArg)}).toList()';
       }
     } else if (_isList0(type)) {
-      return '$name.map($superName.dynamicToJson).toList()';
+      return '$name.map(_dynamicToJson).toList()';
     } else if (isUnknownType(type)) {
-      return '$superName.dynamicToJson($name)';
+      return '_dynamicToJson($name)';
     } else {
       return '$name.toJson()';
     }
@@ -362,24 +362,6 @@ String _generate(Configuration config, StringBuffer buffer,
       writeLn('  Map toJson();');
     }
 
-    // dynamicToJson
-    if (config.toJson
-        && !def.constructors.isEmpty
-        && !overriden(def.name, 'dynamicToJson')
-        && datatypeHasUnknownTypes(def)) {
-      writeLn('  static dynamicToJson(object) {');
-      writeLn('    if (object == null || object is num || object is int '
-              '|| object is double');
-      writeLn('        || object is bool || object is String) {');
-      writeLn('      return object;');
-      writeLn('    } else if (object is List) {');
-      writeLn('      return object.map(dynamicToJson).toList();');
-      writeLn('    } else {');
-      writeLn('      return object.toJson();');
-      writeLn('    }');
-      writeLn('  }');
-    }
-
     // overriden/extra methods
     final userClass = classMap[def.name];
     if (userClass != null) {
@@ -451,7 +433,30 @@ String _generate(Configuration config, StringBuffer buffer,
     }
   }
 
+  void generatePrelude() {
+    bool written = false;
+    if (config.toJson
+        && defs.any((d) => !d.constructors.isEmpty)
+        && defs.any((d) => datatypeHasUnknownTypes(d))) {
+      writeLn('''_dynamicToJson(value) {
+  if (value == null || value is num || value is int || value is double
+      || value is bool || value is String) {
+    return value;
+  } else if (value is List) {
+    return value.map(_dynamicToJson).toList();
+  } else {
+    return value.toJson();
+  }
+}''');
+      written = true;
+    }
+    if (written) {
+      writeLn('');
+    }
+  }
+
   generateImports();
+  generatePrelude();
   for (final def in defs) {
     generateDefinition(def);
     writeLn('');
