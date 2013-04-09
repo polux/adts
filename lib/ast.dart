@@ -40,6 +40,10 @@ class Constructor {
 
   Constructor(this.name, this.parameters);
 
+  Constructor subst(Map<String, TypeAppl> s) {
+    return new Constructor(name, parameters.map((p) => p.subst(s)).toList());
+  }
+
   String toString() {
     String params = parameters.map(_toString).join(', ');
     return "$name($params)";
@@ -51,6 +55,10 @@ class Parameter {
   final TypeAppl type;
 
   Parameter(this.type, this.name);
+
+  Parameter subst(Map<String, TypeAppl> s) {
+    return new Parameter(type.subst(s), name);
+  }
 
   String toString() => "$type $name";
 }
@@ -69,6 +77,29 @@ class TypeAppl {
       return "$name<$args>";
     }
   }
+
+  static bool _same(List xs, List ys) {
+    if (xs.length != ys.length) return false;
+    for (int i = 0; i < xs.length; i++) {
+      if (xs[i] != ys[i]) return false;
+    }
+    return true;
+  }
+
+
+  TypeAppl subst(Map<String, TypeAppl> s) {
+    return (s.containsKey(name) && arguments.isEmpty)
+        ? s[name]
+        : new TypeAppl(name, arguments.map((ty) => ty.subst(s)).toList());
+  }
+
+  bool operator ==(TypeAppl appl) {
+    return (appl is TypeAppl)
+        && name == appl.name
+        && _same(arguments, appl.arguments);
+  }
+
+  int get hashCode => name.hashCode;
 }
 
 class Class {

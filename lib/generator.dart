@@ -57,8 +57,15 @@ class Configuration {
 _lines(Iterable ss) =>
     ss.join('\n');
 
-_commas(Iterable ss) =>
-    ss.join(', ');
+_commas(Iterable ss, [int indent]) {
+  if (indent == null) {
+    return ss.join(', ');
+  } else {
+    StringBuffer spaces = new StringBuffer();
+    for (int i = 0; i < indent; i++) spaces.write(' ');
+    return ss.join(',\n$spaces');
+  }
+}
 
 String _typeArgs(List args, [String extraArg]) {
   if (extraArg != null) {
@@ -91,13 +98,18 @@ bool _isList1(TypeAppl type) {
 }
 
 
-String _generate(Configuration config, StringBuffer buffer,
-                 List<DataTypeDefinition> defs,
-                 List<Class> classes) {
+class Generator {
 
-  Map<String, Class> classMap = {};
-  for (final c in classes) {
-    classMap[c.name] = c;
+  final Configuration config;
+  final StringBuffer buffer;
+  final List<DataTypeDefinition> defs;
+  final List<Class> classes;
+  final Map<String, Class> classMap = {};
+
+  Generator(this.config, this.buffer, this.defs, this.classes) {
+    for (final c in classes) {
+      classMap[c.name] = c;
+    }
   }
 
   bool overriden(String className, String methodName) {
@@ -113,17 +125,19 @@ String _generate(Configuration config, StringBuffer buffer,
     write('$s\n');
   }
 
-  bool isUnknownType(TypeAppl type) {
-    if (_isAtom(type) || _isList1(type)) {
-      return false;
-    }
+  DataTypeDefinition dataTypeMatching(TypeAppl type) {
     final datatype = defs.firstWhere((d) => d.name == type.name,
-                                     orElse: () => null);
+        orElse: () => null);
     if (datatype != null
         && datatype.variables.length == type.arguments.length) {
-      return false;
+      return datatype;
     }
-    return true;
+  }
+
+  bool isUnknownType(TypeAppl type) {
+    return !_isAtom(type)
+        && !_isList1(type)
+        && dataTypeMatching(type) == null;
   }
 
   void generateMatchMethodPrefix(DataTypeDefinition def) {
@@ -139,7 +153,7 @@ String _generate(Configuration config, StringBuffer buffer,
     write('  Object match({$args})');
   }
 
-  String jsonRecursiveCall(String superName, String name, TypeAppl type) {
+  String jsonRecursiveCall(String name, TypeAppl type) {
     if (_isAtom(type)) {
       return name;
     } else if (_isList1(type)) {
@@ -147,8 +161,7 @@ String _generate(Configuration config, StringBuffer buffer,
       if (_isAtom(typeArg)) {
         return name;
       } else {
-        return '$name.map((x) => '
-               '${jsonRecursiveCall(superName, 'x', typeArg)}).toList()';
+        return '$name.map((x) => ${jsonRecursiveCall('x', typeArg)}).toList()';
       }
     } else if (_isList0(type)) {
       return '$name.map(_dynamicToJson).toList()';
@@ -156,6 +169,44 @@ String _generate(Configuration config, StringBuffer buffer,
       return '_dynamicToJson($name)';
     } else {
       return '$name.toJson()';
+    }
+  }
+
+  String fromJsonFunctionName(TypeAppl type) {
+    stringify(bool first) => (TypeAppl type) {
+      final name = first
+          ? '${type.name[0].toLowerCase()}${type.name.substring(1)}'
+          : type.name;
+      if (type.arguments.isEmpty) {
+        return name;
+      } else {
+        final args = type.arguments.map(stringify(false)).join();
+        return '$name${args}';
+      }
+    };
+    return '${stringify(true)(type)}FromJson';
+  }
+
+  String fromJsonRecursiveCall(String name, TypeAppl type) {
+    final datatype = dataTypeMatching(type);
+    if (datatype != null) {
+      final subst = substitution(datatype, type.arguments);
+      final extraArgs = unknownTypesOfDatatype(datatype)
+          .map((ty) => fromJsonFunctionName(ty.subst(subst)));
+      final args = [name]..addAll(extraArgs);
+      return '${datatype.name}.fromJson(${_commas(args)})';
+    } else if (_isAtom(type)) {
+      return name;
+    } else if (_isList1(type)) {
+      final typeArg = type.arguments[0];
+      if (_isAtom(typeArg)) {
+        return name;
+      } else {
+        return '$name.map((x) => '
+               '${fromJsonRecursiveCall('x', typeArg)}).toList()';
+      }
+    } else {
+      return '${fromJsonFunctionName(type)}($name)';
     }
   }
 
@@ -281,9 +332,27 @@ String _generate(Configuration config, StringBuffer buffer,
     if (config.toJson && !overriden(cons.name, 'toJson')) {
       writeLn('  Map toJson() {');
       final entries = cons.parameters.map((p) =>
-          "'${p.name}': ${jsonRecursiveCall(def.name, p.name, p.type)}");
+          "'${p.name}': ${jsonRecursiveCall(p.name, p.type)}");
       final keyvals = [["'tag': '${cons.name}'"], entries].expand((x) => x);
-      writeLn("    return { ${_commas(keyvals)} };");
+      writeLn("    return { ${_commas(keyvals, 13)} };");
+      writeLn('  }');
+    }
+
+    // fromJson
+    if (config.fromJson && !overriden(cons.name, 'fromJson')) {
+      signature(TypeAppl type) {
+        final prefix = def.variables.contains(type.name) ? '' : '${type.name} ';
+        return '$prefix${fromJsonFunctionName(type)}(Map json)';
+      }
+      final extraArgs = unknownTypesOfConstructor(cons).map(signature);
+      final args = ['Map json']..addAll(extraArgs);
+      final recArgs = cons.parameters.map((p) =>
+          fromJsonRecursiveCall("json['${p.name}']", p.type));
+      final prefix1 = '  static ${cons.name} fromJson(';
+      final prefix2 = '    return new ${cons.name}(';
+      writeLn('$prefix1${_commas(args, prefix1.length)}) {');
+      writeLn("    if (json['tag'] != '${cons.name}') return null;");
+      writeLn("$prefix2${_commas(recArgs, prefix2.length)});");
       writeLn('  }');
     }
 
@@ -312,6 +381,59 @@ String _generate(Configuration config, StringBuffer buffer,
 
   bool datatypeHasUnknownTypes(DataTypeDefinition def) {
     return def.constructors.any(constructorHasUnknownTypes);
+  }
+
+  Map<String, TypeAppl> substitution(DataTypeDefinition def,
+                                     List<TypeAppl> tys) {
+    assert(def.variables.length == tys.length);
+    final Map<String, TypeAppl> subst = {};
+    for (int i = 0; i < def.variables.length; i++) {
+      subst[def.variables[i]] = tys[i];
+    }
+    return subst;
+  }
+
+  void _addConstructor(Constructor cons,
+                       Set<TypeAppl> seen,
+                       Set<TypeAppl> result) {
+    for (final type in cons.parameters.map((p) => p.type)) {
+      _addDataType(type, seen, result);
+    }
+  }
+
+  void _addDataType(TypeAppl type,
+                    Set<TypeAppl> seen,
+                    Set<TypeAppl> result) {
+    if (seen.contains(type)) return;
+    seen.add(type);
+    final datatype = dataTypeMatching(type);
+    if (datatype != null) {
+      final subst = substitution(datatype, type.arguments);
+      for (final cons in datatype.constructors) {
+        _addConstructor(cons.subst(subst), seen, result);
+      }
+    } else if (_isAtom(type)) {
+      return;
+    } else if (_isList1(type)) {
+      _addDataType(type.arguments[0], seen, result);
+    } else {
+      result.add(type);
+    }
+  }
+
+  Set<TypeAppl> unknownTypesOfConstructor(Constructor cons) {
+    Set<TypeAppl> result = new Set();
+    Set<TypeAppl> seen = new Set();
+    _addConstructor(cons, seen, result);
+    return result;
+  }
+
+  Set<TypeAppl> unknownTypesOfDatatype(DataTypeDefinition def) {
+    Set<TypeAppl> result = new Set();
+    Set<TypeAppl> seen = new Set();
+    final args = def.variables.map((v) => new TypeAppl(v, [])).toList();
+    _addDataType(new TypeAppl(def.name, args), seen, result);
+    return result;
   }
 
   void generateSuperClass(DataTypeDefinition def) {
@@ -360,6 +482,28 @@ String _generate(Configuration config, StringBuffer buffer,
         && !def.constructors.isEmpty
         && !overriden(def.name, 'toJson')) {
       writeLn('  Map toJson();');
+    }
+
+    // fromJson
+    if (config.fromJson
+        && !def.constructors.isEmpty
+        && !overriden(def.name, 'fromJson')) {
+      signature(TypeAppl type) {
+        final prefix = def.variables.contains(type.name) ? '' : '${type.name} ';
+        return '$prefix${fromJsonFunctionName(type)}(Map json)';
+      }
+      final args =
+          ['Map json']..addAll(unknownTypesOfDatatype(def).map(signature));
+      final prefix = '  static ${def.name} fromJson(';
+      writeLn('$prefix${_commas(args, prefix.length)}) {');
+      writeLn('    ${def.name} result;');
+      for (final cons in def.constructors) {
+        final args = ['json']..addAll(
+            unknownTypesOfConstructor(cons).map(fromJsonFunctionName));
+        writeLn('    result = ${cons.name}.fromJson(${_commas(args)});');
+        writeLn('    if (result != null) return result;');
+      }
+      writeLn('  }');
     }
 
     // overriden/extra methods
@@ -455,16 +599,18 @@ String _generate(Configuration config, StringBuffer buffer,
     }
   }
 
-  generateImports();
-  generatePrelude();
-  for (final def in defs) {
-    generateDefinition(def);
-    writeLn('');
+  generate() {
+    generateImports();
+    generatePrelude();
+    for (final def in defs) {
+      generateDefinition(def);
+      writeLn('');
+    }
   }
 }
 
 String generate(Module module, Configuration configuration) {
   StringBuffer buffer = new StringBuffer();
-  _generate(configuration, buffer, module.adts, module.classes);
+  new Generator(configuration, buffer, module.adts, module.classes).generate();
   return buffer.toString();
 }

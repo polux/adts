@@ -69,6 +69,11 @@ BSD-style license that can be found in the LICENSE file.
       <input type="checkbox" bind-checked="toJson" />
       <code>toJson</code>
     </label>
+
+    <label>
+      <input type="checkbox" bind-checked="fromJson" />
+      <code>fromJson</code>
+    </label>
   </div>
 </div>
 
@@ -127,6 +132,7 @@ bool visitor = true;
 bool copyMethod = true;
 bool matchMethod = true;
 bool toJson = true;
+bool fromJson = true;
 
 String get generated {
   final parseResult = moduleParser.run(input);
@@ -140,7 +146,8 @@ String get generated {
       toStringMethod: toStringMethod,
       visitor: visitor,
       matchMethod: matchMethod,
-      toJson: toJson
+      toJson: toJson,
+      fromJson: fromJson
     );
     return generate(parseResult.value, config);
   } else {
