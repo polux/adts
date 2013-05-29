@@ -2,14 +2,14 @@
 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-echo "dart_analyzer --work=/tmp lib/*.dart"
-results=`dart_analyzer --work=/tmp lib/*.dart 2>&1`
+dartanalyzer $ROOT_DIR/lib/*.dart
 
-if [ -n "$results" ]; then
-    echo "$results"
-    exit 1
+EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+
+  exit 1
 else
-    echo "done"
+  echo "done"
 fi
 
 TMPFILE=`mktemp --suffix .dart`
@@ -28,13 +28,14 @@ fi
 echo "echo 'main() { new Cons<int>(1, new Cons<int>(2, new Nil<int>())); }' >> $TMPFILE'"
 echo 'main() { new Cons<int>(1, new Cons<int>(2, new Nil<int>())); }' >> $TMPFILE
 
-echo "dart_analyzer --work=/tmp $TMPFILE"
-results=`dart_analyzer --work=/tmp $TMPFILE 2>&1`
+dartanalyzer $TMPFILE
 
-if [ -n "$results" ]; then
-    echo "$results"
-    exit 1
+EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+
+  exit 1
 else
-    echo "done"
+  echo "done"
 fi
+
 
