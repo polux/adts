@@ -10,13 +10,14 @@ import 'package:persistent/persistent.dart';
 _toString(x) => x.toString();
 
 class Module {
+  final Option<String> libraryName;
   final List<DataTypeDefinition> adts;
   final List<Class> classes;
 
-  Module(this.adts, this.classes);
+  Module(this.libraryName, this.adts, this.classes);
 
   String toString() {
-    return 'Module($adts, $classes)';
+    return 'Module($libraryName, $adts, $classes)';
   }
 }
 

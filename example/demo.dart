@@ -10,6 +10,8 @@ import 'package:adts/generator.dart';
 
 main() {
   final s = r'''
+    library lists;
+
     data LinkedList<A> = Nil() | Cons(A head, LinkedList<A> tail)
 
     class Cons {

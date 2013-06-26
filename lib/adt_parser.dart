@@ -8,7 +8,8 @@ library adt_parser;
 import 'package:adts/ast.dart';
 import 'package:parsers/parsers.dart';
 
-final _reserved = ['data', 'class', 'get', 'set', 'operator', 'static'];
+final _reserved = ['data', 'class', 'get', 'set', 'operator', 'static',
+                   'library'];
 final _operators = ['==', '~', '[]', '[]=', '*', '/', '%', '~/', '+',
                     '<<', '>>>', '>>', '>=', '>', '<=', '<', '&', '^', '|'];
 
@@ -21,12 +22,19 @@ class _AdtParsers extends LanguageParsers {
     op = choice(_operators.map(symbol).toList());
   }
 
+  get libraryDecl =>
+      reserved['library']
+      + identifier
+      + semi
+      ^ (_, name, __) => name;
+
   get module =>
       whiteSpace
+      + libraryDecl.maybe
       + def.many
       + classDecl.many
       + eof
-      ^ (_, adts, classes, __) => new Module(adts, classes);
+      ^ (_, lib, adts, classes, __) => new Module(lib, adts, classes);
 
   get adt => whiteSpace > (def.many < eof);
 

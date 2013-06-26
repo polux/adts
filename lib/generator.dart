@@ -6,6 +6,7 @@
 library generator;
 
 import 'package:adts/ast.dart';
+import 'package:persistent/persistent.dart';
 
 class Configuration {
   final bool finalFields;
@@ -102,11 +103,13 @@ class Generator {
 
   final Configuration config;
   final StringBuffer buffer;
+  final Option<String> libraryName;
   final List<DataTypeDefinition> defs;
   final List<Class> classes;
   final Map<String, Class> classMap = {};
 
-  Generator(this.config, this.buffer, this.defs, this.classes) {
+  Generator(this.config, this.buffer, this.libraryName, this.defs,
+      this.classes) {
     for (final c in classes) {
       classMap[c.name] = c;
     }
@@ -561,6 +564,13 @@ class Generator {
     }
   }
 
+  void generateLibraryName() {
+    if (libraryName.isDefined) {
+      writeLn('library ${libraryName.value};');
+      writeLn('');
+    }
+  }
+
   void generateImports() {
     bool written = false;
     if (config.parser) {
@@ -600,6 +610,7 @@ class Generator {
   }
 
   generate() {
+    generateLibraryName();
     generateImports();
     generatePrelude();
     for (final def in defs) {
@@ -611,6 +622,7 @@ class Generator {
 
 String generate(Module module, Configuration configuration) {
   StringBuffer buffer = new StringBuffer();
-  new Generator(configuration, buffer, module.adts, module.classes).generate();
+  new Generator(configuration, buffer, module.libraryName, module.adts,
+      module.classes).generate();
   return buffer.toString();
 }
