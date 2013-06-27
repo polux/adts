@@ -95,8 +95,8 @@ import 'package:adts/generator.dart';
 String input = r'''
 data LinkedList<A> = Nil() | Cons(A head, LinkedList<A> tail)
 
-data TreeMap<K, V> = Fork(TreeMap<K, V> left, TreeMap<K,V> right)
-                   | Leaf(K key, V value)
+data TreeMap<K, V> = Fork(K key, V value, TreeMap<K, V> left, TreeMap<K,V> right)
+                   | Leaf()
 
 // we can add methods to generated classes ...
 
@@ -115,11 +115,12 @@ class Cons {
 
 // ... as well as override generated methods
 
-class MapVisitor {
-  R visitFork(Fork<K, V> fork) {
-    fork.left.accept(this);
-    fork.right.accept(this);
-  }
+class Leaf {
+  String toString() => '.';
+}
+
+class Fork {
+  String toString() => '[$left ($key: $value) $right]';
 }
 ''';
 
