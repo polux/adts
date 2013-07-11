@@ -324,7 +324,7 @@ class Generator {
       writeLn('    return new ${cons.name}(');
       final acc = [];
       for (final p in cons.parameters) {
-        acc.add('        ?${p.name} ? ${p.name} : this.${p.name}');
+        acc.add('        (${p.name} != null) ? ${p.name} : this.${p.name}');
       }
       write(acc.join(',\n'));
       writeLn(');');
