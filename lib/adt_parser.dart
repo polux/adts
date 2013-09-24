@@ -103,14 +103,14 @@ class _AdtParsers extends LanguageParsers {
 
   get methodBody =>
       char(';')
-    | string('=>') > anyChar.skipManyUntil(char(';'))
+    | (string('=>') > anyChar.skipManyUntil(char(';')))
     | multiLineBody();
 
   multiLineBody() => char('{') > inMethodBody();
 
   inMethodBody() => noneOf('{}').skipMany > scopeOrEnd();
 
-  scopeOrEnd() => char('}') | rec(multiLineBody) > rec(inMethodBody);
+  scopeOrEnd() => char('}') | (rec(multiLineBody) > rec(inMethodBody));
 }
 
 final Parser<Module> moduleParser = new _AdtParsers().module;
