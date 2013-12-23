@@ -6,7 +6,7 @@
 library build;
 
 import 'dart:io';
-import 'dart:json' as json;
+import 'dart:convert' show JSON;
 import 'package:adts/adt_parser.dart';
 import 'package:adts/generator.dart';
 import 'package:args/args.dart';
@@ -74,7 +74,7 @@ void _reportErrorForLine(String fileName, int line, String message) {
       'message': message
     }
   };
-  print(json.stringify([result]));
+  print(JSON.encode([result]));
 }
 
 void _reportErrorForOffset(String fileName, int offset, String message) {
@@ -87,7 +87,7 @@ void _reportErrorForOffset(String fileName, int offset, String message) {
       'message': message
     }
   };
-  print(json.stringify([result]));
+  print(JSON.encode([result]));
 }
 
 void _reportMapping(String source, String target) {
@@ -98,7 +98,7 @@ void _reportMapping(String source, String target) {
       'to': target
     }
   };
-  print(json.stringify([result]));
+  print(JSON.encode([result]));
 }
 
 bool _isAdartFilename(String filename) => filename.endsWith(".adart");

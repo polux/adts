@@ -4,19 +4,23 @@ packages:
   analyzer_experimental:
     description: analyzer_experimental
     source: hosted
-    version: "0.7.5"
+    version: "0.8.6"
   args:
     description: args
     source: hosted
-    version: "0.7.5"
-  barback:
-    description: barback
-    source: hosted
-    version: "0.7.5"
+    version: "0.10.0"
   browser:
     description: browser
     source: hosted
-    version: "0.7.5"
+    version: "0.9.0"
+  collection:
+    description: collection
+    source: hosted
+    version: "0.9.0"
+  collection_helpers:
+    description: collection_helpers
+    source: hosted
+    version: "0.9.2"
   csslib:
     description: csslib
     source: hosted
@@ -24,64 +28,52 @@ packages:
   custom_element:
     description: custom_element
     source: hosted
-    version: "0.7.5"
+    version: "0.9.1+2"
   html5lib:
     description: html5lib
     source: hosted
-    version: "0.4.4"
+    version: "0.8.9"
   logging:
     description: logging
     source: hosted
-    version: "0.7.5"
-  mdv:
-    description: mdv
-    source: hosted
-    version: "0.7.5"
-  meta:
-    description: meta
-    source: hosted
-    version: "0.7.5"
+    version: "0.9.1"
   mutation_observer:
     description: mutation_observer
     source: hosted
-    version: "0.7.5"
-  observe:
-    description: observe
-    source: hosted
-    version: "0.7.5"
+    version: "0.9.0"
   parsers:
     description: parsers
     source: hosted
-    version: "0.13.5"
+    version: "0.14.0"
   path:
     description: path
     source: hosted
-    version: "0.7.5"
-  pathos:
-    description: pathos
-    source: hosted
-    version: "0.6.3+1"
+    version: "1.0.0"
   persistent:
     description: persistent
     source: hosted
-    version: "0.7.4"
+    version: "0.8.0"
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.7.5"
+    version: "0.9.0"
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.7.5"
+    version: "0.9.1"
+  typed_data:
+    description: typed_data
+    source: hosted
+    version: "0.9.0"
   unittest:
     description: unittest
     source: hosted
-    version: "0.7.5"
-  unmodifiable_collection:
-    description: unmodifiable_collection
+    version: "0.9.2+1"
+  utf:
+    description: utf
     source: hosted
-    version: "0.7.5"
+    version: "0.9.0"
   web_ui:
     description: web_ui
     source: hosted
-    version: "0.4.20"
+    version: "0.4.28"

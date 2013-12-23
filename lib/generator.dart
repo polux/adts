@@ -151,6 +151,7 @@ class Generator {
           c.parameters.map((p) => '${p.type} ${p.name}'));
       acc.add('Object $low($typedParams)');
     }
+    acc.add('Object otherwise(): _nonExhaustive');
     final sep = ',\n                ';
     final args = acc.join(sep);
     write('  Object match({$args})');
@@ -313,7 +314,7 @@ class Generator {
       writeLn(' {');
       final args = _commas(cons.parameters.map((p) => p.name));
       final low = cons.name.toLowerCase();
-      writeLn('    return $low($args);');
+      writeLn('    return ($low != null) ? $low($args) : otherwise();');
       writeLn('  }');
     }
 
@@ -601,6 +602,12 @@ class Generator {
   } else {
     return value.toJson();
   }
+}''');
+      written = true;
+    }
+    if (config.matchMethod) {
+      writeLn('''_nonExhaustive() {
+  throw "non-exhaustive matching";
 }''');
       written = true;
     }
