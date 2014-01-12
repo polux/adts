@@ -6,6 +6,7 @@
 library parser_test;
 
 import 'package:adts/adt_parser.dart';
+import 'package:adts/configuration.dart';
 import 'package:adts/generator.dart';
 
 main() {

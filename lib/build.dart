@@ -8,10 +8,12 @@ library build;
 import 'dart:io';
 import 'dart:convert' show JSON;
 import 'package:adts/adt_parser.dart';
+import 'package:adts/configuration.dart';
 import 'package:adts/generator.dart';
 import 'package:args/args.dart';
 
-void build(List<String> arguments) {
+void build(List<String> arguments,
+           [Configuration configuration = const Configuration()]) {
   final args = _processArgs(arguments);
   final changedFiles = args["changed"];
   final removedFiles = args["removed"];
@@ -22,18 +24,22 @@ void build(List<String> arguments) {
   final fullBuild = args["full"] || (!machineFormat && changedFiles.isEmpty &&
       removedFiles.isEmpty && !cleanBuild);
 
-  changedFiles.where(_isAdartFilename).forEach(_compileADartFile);
-  removedFiles.forEach(_handleRemovedFile);
+  changedFiles.where(_isAdartFilename).forEach((name) {
+    _compileADartFile(name, configuration);
+  });
+  removedFiles.forEach((name) {
+    _handleRemovedFile(name, configuration);
+  });
 }
 
-void _compileADartFile(String sourceName) {
+void _compileADartFile(String sourceName, Configuration configuration) {
   assert(_isAdartFilename(sourceName));
   final source = new File(sourceName);
   final targetName = _adartToDart(sourceName);
   final target = new File(targetName);
   final parseResult = moduleParser.run(source.readAsStringSync());
   if (parseResult.isSuccess) {
-    final generated = generate(parseResult.value, new Configuration());
+    final generated = generate(parseResult.value, configuration);
     target.writeAsStringSync(generated);
     _reportMapping(sourceName, targetName);
   } else {
@@ -50,7 +56,7 @@ void _compileADartFile(String sourceName) {
   }
 }
 
-void _handleRemovedFile(String filename) {
+void _handleRemovedFile(String filename, Configuration configuration) {
   if (_isAdartFilename(filename)) {
     final target = new File(_adartToDart(filename));
     if (target.existsSync()) {
@@ -60,7 +66,7 @@ void _handleRemovedFile(String filename) {
     final sourceName = _dartToADart(filename);
     final source = new File(sourceName);
     if (source.existsSync()) {
-      _compileADartFile(sourceName);
+      _compileADartFile(sourceName, configuration);
     }
   }
 }

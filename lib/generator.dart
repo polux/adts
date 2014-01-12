@@ -6,54 +6,8 @@
 library generator;
 
 import 'package:adts/ast.dart';
+import 'package:adts/configuration.dart';
 import 'package:persistent/persistent.dart';
-
-class Configuration {
-  final bool finalFields;
-  final bool isGetters;
-  final bool asGetters;
-  final bool copyMethod;
-  final bool equality;
-  final bool toStringMethod;
-  final bool fromString;
-  final bool parser;
-  final bool enumerator;
-  final bool visitor;
-  final bool matchMethod;
-  final bool extractor;
-  final bool toJson;
-  final bool fromJson;
-
-  Configuration({
-    bool finalFields: true,
-    bool isGetters: true,
-    bool asGetters: true,
-    bool copyMethod: true,
-    bool equality: true,
-    bool toStringMethod: true,
-    bool fromString: true,
-    bool parser: false,
-    bool enumerator: false,
-    bool visitor: true,
-    bool matchMethod: true,
-    bool extractor: true,
-    bool toJson: true,
-    bool fromJson: true
-  }) : this.finalFields = finalFields
-     , this.isGetters = isGetters
-     , this.asGetters = asGetters
-     , this.copyMethod = copyMethod
-     , this.equality = equality
-     , this.toStringMethod = toStringMethod
-     , this.fromString = fromString
-     , this.parser = parser
-     , this.enumerator = enumerator
-     , this.visitor = visitor
-     , this.matchMethod = matchMethod
-     , this.extractor = extractor
-     , this.toJson = toJson
-     , this.fromJson = fromJson;
-}
 
 _lines(Iterable ss) =>
     ss.join('\n');
