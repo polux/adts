@@ -11,7 +11,6 @@ class Configuration {
   final bool enumerator;  // WIP
   final bool visitor;
   final bool matchMethod;
-  final bool extractor;
   final bool toJson;
   final bool fromJson;
 
@@ -24,7 +23,6 @@ class Configuration {
     bool toStringMethod: true,
     bool visitor: true,
     bool matchMethod: true,
-    bool extractor: true,
     bool toJson: true,
     bool fromJson: true
   }) : this.finalFields = finalFields
