@@ -9,7 +9,7 @@ import 'package:adts/ast.dart';
 import 'package:parsers/parsers.dart';
 
 final _reserved = ['data', 'class', 'get', 'set', 'operator', 'static',
-                   'library'];
+                   'library', 'import'];
 final _operators = ['==', '~', '[]', '[]=', '*', '/', '%', '~/', '+',
                     '<<', '>>>', '>>', '>=', '>', '<=', '<', '&', '^', '|'];
 
@@ -28,13 +28,21 @@ class _AdtParsers extends LanguageParsers {
       + semi
       ^ (_, name, __) => name;
 
+  get importDecl =>
+      reserved['import']
+      + stringLiteral
+      + semi
+      ^ (_, name, __) => name;
+
   get module =>
       whiteSpace
       + libraryDecl.maybe
+      + importDecl.many
       + def.many
       + classDecl.many
       + eof
-      ^ (_, lib, adts, classes, __) => new Module(lib, adts, classes);
+      ^ (_, lib, imports, adts, classes, __) =>
+          new Module(lib, imports, adts, classes);
 
   get adt => whiteSpace > (def.many < eof);
 

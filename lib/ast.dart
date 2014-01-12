@@ -11,13 +11,14 @@ _toString(x) => x.toString();
 
 class Module {
   final Option<String> libraryName;
+  final List<String> imports;
   final List<DataTypeDefinition> adts;
   final List<Class> classes;
 
-  Module(this.libraryName, this.adts, this.classes);
+  Module(this.libraryName, this.imports, this.adts, this.classes);
 
   String toString() {
-    return 'Module($libraryName, $adts, $classes)';
+    return 'Module($libraryName, $imports, $adts, $classes)';
   }
 }
 

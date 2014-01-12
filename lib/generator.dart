@@ -58,11 +58,12 @@ class Generator {
   final Configuration config;
   final StringBuffer buffer;
   final Option<String> libraryName;
+  final List<String> imports;
   final List<DataTypeDefinition> defs;
   final List<Class> classes;
   final Map<String, Class> classMap = {};
 
-  Generator(this.config, this.buffer, this.libraryName, this.defs,
+  Generator(this.config, this.buffer, this.libraryName, this.imports, this.defs,
       this.classes) {
     for (final c in classes) {
       classMap[c.name] = c;
@@ -527,7 +528,10 @@ class Generator {
   }
 
   void generateImports() {
-    bool written = false;
+    for (final dependency in imports) {
+      writeLn('import "$dependency";');
+    }
+    bool written = !imports.isEmpty;
     if (config.parser) {
       writeLn("import 'package:parsers/parsers.dart' as parsers;");
       written = true;
@@ -583,7 +587,7 @@ class Generator {
 
 String generate(Module module, Configuration configuration) {
   StringBuffer buffer = new StringBuffer();
-  new Generator(configuration, buffer, module.libraryName, module.adts,
-      module.classes).generate();
+  new Generator(configuration, buffer, module.libraryName, module.imports,
+      module.adts, module.classes).generate();
   return buffer.toString();
 }
