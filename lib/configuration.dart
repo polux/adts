@@ -35,7 +35,6 @@ class Configuration {
      , this.enumerator = false
      , this.visitor = visitor
      , this.matchMethod = matchMethod
-     , this.extractor = extractor
      , this.toJson = toJson
      , this.fromJson = fromJson;
 }
