@@ -2,6 +2,7 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 // Author: Paul Brauner (polux@google.com)
+// Contributor: Alexei Diaz (alexeidiaz@google.com)
 
 library adt_parser;
 
@@ -63,7 +64,7 @@ class _AdtParsers extends LanguageParsers {
       + (identifier % 'parameter')
       ^ (t, p) => new Parameter(t, p);
 
-  typeAppl() =>
+  Parser typeAppl() =>
       identifier
       + angles(rec(typeAppl).sepBy(comma)).orElse([])
       ^ (c, args) => new TypeAppl(c, args);
@@ -114,9 +115,9 @@ class _AdtParsers extends LanguageParsers {
     | (string('=>') > anyChar.skipManyUntil(char(';')))
     | multiLineBody();
 
-  multiLineBody() => char('{') > inMethodBody();
+  Parser multiLineBody() => char('{') > inMethodBody();
 
-  inMethodBody() => noneOf('{}').skipMany > scopeOrEnd();
+  Parser inMethodBody() => noneOf('{}').skipMany > scopeOrEnd();
 
   scopeOrEnd() => char('}') | (rec(multiLineBody) > rec(inMethodBody));
 }
