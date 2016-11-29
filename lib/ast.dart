@@ -2,6 +2,7 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 // Author: Paul Brauner (polux@google.com)
+// Contributor: Alexei Diaz (alexeidiaz@google.com)
 
 library ast;
 
@@ -88,17 +89,17 @@ class TypeAppl {
     return true;
   }
 
-
   TypeAppl subst(Map<String, TypeAppl> s) {
     return (s.containsKey(name) && arguments.isEmpty)
         ? s[name]
         : new TypeAppl(name, arguments.map((ty) => ty.subst(s)).toList());
   }
 
-  bool operator ==(TypeAppl appl) {
-    return (appl is TypeAppl)
-        && name == appl.name
-        && _same(arguments, appl.arguments);
+  @override
+  bool operator ==(other) {
+    return (other is TypeAppl) &&
+        name == other.name &&
+        _same(arguments, other.arguments);
   }
 
   int get hashCode => name.hashCode;
@@ -119,7 +120,6 @@ class Class {
     return 'Class($name, $methods)';
   }
 }
-
 
 class Method {
   final String name;
