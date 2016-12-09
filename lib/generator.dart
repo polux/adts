@@ -451,17 +451,18 @@ class Generator {
         final prefix = def.variables.contains(type.name) ? '' : '${type.name} ';
         return '$prefix${fromJsonFunctionName(type)}(Map json)';
       }
-      final args =
-          ['Map json']..addAll(unknownTypesOfDatatype(def).map(signature));
+
+      final args = ['Map json']
+        ..addAll(unknownTypesOfDatatype(def).map(signature));
       final prefix = '  static ${def.name} fromJson(';
-      writeLn('$prefix${_commas(args, prefix.length)}) {');
-      writeLn('    ${def.name} result;');
-      for (final cons in def.constructors) {
-        final args = ['json']..addAll(
-            unknownTypesOfConstructor(cons).map(fromJsonFunctionName));
-        writeLn('    result = ${cons.name}.fromJson(${_commas(args)});');
-        writeLn('    if (result != null) return result;');
-      }
+      writeLn('$prefix${_commas(args, prefix.length)}) =>');
+      final indent = '      ';
+      final body = def.constructors.map((cons) {
+        final args = ['json']
+          ..addAll(unknownTypesOfConstructor(cons).map(fromJsonFunctionName));
+        return '${cons.name}.fromJson(${_commas(args)})';
+      }).join(' ??\n$indent');
+      writeLn('$indent$body;');
       writeLn('  }');
     }
 
